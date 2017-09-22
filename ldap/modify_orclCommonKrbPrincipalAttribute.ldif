@@ -1,0 +1,5 @@
+dn: cn=Common,cn=Products,cn=OracleContext,dc=postgasse,dc=org
+changetype: modify
+replace: orclCommonKrbPrincipalAttribute
+orclCommonKrbPrincipalAttribute: userPrincipalName
+

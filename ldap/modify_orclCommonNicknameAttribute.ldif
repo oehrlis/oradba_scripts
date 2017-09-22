@@ -1,0 +1,5 @@
+dn: cn=common,cn=products,cn=oraclecontext,dc=postgasse,dc=org
+changetype: modify
+replace: orclCommonNicknameAttribute
+orclCommonNicknameAttribute: sAMAccountName
+
