@@ -2,45 +2,31 @@
 --  Trivadis AG, Infrastructure Managed Services
 --  Saegereistrasse 29, 8152 Glattbrugg, Switzerland
 ----------------------------------------------------------------------------
---  Name......: tal.sql
+--  Name......: net.sql
 --  Author....: Stefan Oehrli (oes) stefan.oehrli@trivadis.com
 --  Editor....: Stefan Oehrli
 --  Date......: 2018.12.11
 --  Revision..:  
---  Purpose...: List/query alert log
---  Usage.....: @tal <STRING> or % for all
+--  Purpose...: List current session connection information
+--  Usage.....: @net
 --  Notes.....: 
---  Reference.: Called as DBA or user with access to x$dbgalertext
+--  Reference.: 
 --  License...: Licensed under the Universal Permissive License v 1.0 as 
 --              shown at http://oss.oracle.com/licenses/upl.
 ----------------------------------------------------------------------------
 --  Modified..:
 --  see git revision history for more information on changes/updates
 ----------------------------------------------------------------------------
-col RECORD_ID for 9999999 head ID
-col ORIGINATING_TIMESTAMP for a20 head Date
-col MESSAGE_TEXT for a120 head Message
-
-SET VERIFY OFF
-SET TERMOUT OFF
-
-column 1 new_value 1
-SELECT '' "1" FROM dual WHERE ROWNUM = 0;
-define query = '&1'
-
-SET TERMOUT ON
+COL net_sid HEAD SID FOR 99999
+COL net_osuser HEAD OS_USER FOR a10
+COL net_authentication_type HEAD AUTH_TYPE FOR a10 
+COL net_network_service_banner HEAD NET_BANNER FOR a100
 
 SELECT 
-    record_id,
-    to_char(originating_timestamp,'DD.MM.YYYY HH24:MI:SS') ORIGINATING_TIMESTAMP,
-    message_text 
-FROM 
-    x$dbgalertext 
-WHERE 
-    lower(MESSAGE_TEXT) LIKE lower(DECODE('&query', '', '%', '%&query%')); 
-
-SET HEAD OFF
-SELECT 'Filter on alert log message => '||NVL('&query','%') FROM dual;    
-SET HEAD ON
-undefine 1
+    sid                    net_sid, 
+    osuser                 net_osuser, 
+    authentication_type    net_authentication_type, 
+    network_service_banner net_network_service_banner
+FROM v$session_connect_info
+WHERE sid=(SELECT sid FROM v$mystat WHERE ROWNUM = 1);
 -- EOF ---------------------------------------------------------------------

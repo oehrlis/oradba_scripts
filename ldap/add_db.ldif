@@ -1,6 +1,0 @@
-dn: cn=catalog,cn=OracleContext,dc=trivadistraining,dc=com
-objectclass: top
-objectclass: orclNetService
-cn: catalog
-orclNetDescString: (DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=o-sec)(PORT=1521))(CONNECT_DATA=(SID=TDB12A)))
-

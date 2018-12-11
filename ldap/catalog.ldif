@@ -1,6 +1,0 @@
-dn: cn=CATALOG,cn=OracleContext,dc=trivadistraining,dc=com
-objectclass: orclNetServiceAlias
-objectclass: top
-objectclass: alias
-cn: CATALOG
-aliasedobjectname: cn=TDB12A,cn=OracleContext,dc=trivadistraing,dc=com

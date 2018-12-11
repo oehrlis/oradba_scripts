@@ -1,25 +1,23 @@
 ----------------------------------------------------------------------------
---     $Id: $
+--  Trivadis AG, Infrastructure Managed Services
+--  Saegereistrasse 29, 8152 Glattbrugg, Switzerland
 ----------------------------------------------------------------------------
---     Trivadis AG, Infrastructure Managed Services
---     Europa-Strasse 5, 8152 Glattbrugg, Switzerland
+--  Name......: tsqu.sql
+--  Author....: Stefan Oehrli (oes) stefan.oehrli@trivadis.com
+--  Editor....: Stefan Oehrli
+--  Date......: 2018.12.11
+--  Revision..:  
+--  Purpose...: List user with unlimited quota on one or any 
+--              tablespace. Query is doing a like &1
+--  Usage.....: @tsqu <USERNAME> or % for all
+--  Notes.....: Called as as DBA or user with access to dba_ts_quotas
+--              dba_sys_privs,dba_role_privs,dba_users
+--  Reference.: SYS (or grant manually to a DBA)
+--  License...: Licensed under the Universal Permissive License v 1.0 as 
+--              shown at http://oss.oracle.com/licenses/upl.
 ----------------------------------------------------------------------------
---     File-Name........:  tsqu.sql
---     Author...........:  Stefan Oehrli (oes) stefan.oehrli@trivadis.com
---     Editor...........:  $LastChangedBy:   $
---     Date.............:  $LastChangedDate: $
---     Revision.........:  $LastChangedRevision: $
---     Purpose..........:  List user with unlimited quota on one or any 
---                         tablespace. Query is doing a like &1		 
---     Usage............:  @tsqu <USERNAME> or % for all
---     Group/Privileges.:  SYS (or grant manually to a DBA)
---     Input parameters.:  Username or part of a username
---     Called by........:  as DBA or user with access to dba_ts_quotas
---                         dba_sys_privs,dba_role_privs,dba_users
---     Restrictions.....:  unknown
---     Notes............:  --
-----------------------------------------------------------------------------
---     Revision history.:  
+--  Modified..:
+--  see git revision history for more information on changes/updates
 ----------------------------------------------------------------------------
 col tsqu_username head "User Name" for a30
 col tsqu_tablespace_name head "Tablespace Name" for a30
@@ -80,3 +78,4 @@ SET HEAD OFF
 select 'Filter on user name => '||NVL('&username','%') from dual;    
 SET HEAD ON
 undefine 1
+-- EOF ---------------------------------------------------------------------

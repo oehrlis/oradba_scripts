@@ -1,30 +1,28 @@
 ----------------------------------------------------------------------------
---     $Id: $
+--  Trivadis AG, Infrastructure Managed Services
+--  Saegereistrasse 29, 8152 Glattbrugg, Switzerland
 ----------------------------------------------------------------------------
---     Trivadis AG, Infrastructure Managed Services
---     Europa-Strasse 5, 8152 Glattbrugg, Switzerland
+--  Name......: sp.sql
+--  Author....: Stefan Oehrli (oes) stefan.oehrli@trivadis.com
+--  Editor....: Stefan Oehrli
+--  Date......: 2018.10.24
+--  Revision..:  
+--  Purpose...: List user with certain system privileges granted directly or
+--              through roles
+--  Usage.....: @sq <SYSTEM PRIVILEGE> or %FOR all
+--  Notes.....: Called as DBA or user with access to dba_ts_quotas dba_sys_privs,
+--              dba_role_privs,dba_users
+--  Reference.: SYS (or grant manually to a DBA)
+--  License...: Licensed under the Universal Permissive License v 1.0 as 
+--              shown at http://oss.oracle.com/licenses/upl.
 ----------------------------------------------------------------------------
---     File-Name........:  sp.sql
---     Author...........:  Stefan Oehrli (oes) stefan.oehrli@trivadis.com
---     Editor...........:  $LastChangedBy:   $
---     Date.............:  $LastChangedDate: $
---     Revision.........:  $LastChangedRevision: $
---     Purpose..........:  List user with certain system privileges 
---                         granted directly or through roles		 
---     Usage............:  @sq <SYSTEM PRIVILEGE> or % for all
---     Group/Privileges.:  SYS (or grant manually to a DBA)
---     Input parameters.:  System privilege or part of
---     Called by........:  as DBA or user with access to dba_ts_quotas
---                         dba_sys_privs,dba_role_privs,dba_users
---     Restrictions.....:  unknown
---     Notes............:  --
+--  Modified..:
+--  see git revision history for more information on changes/updates
 ----------------------------------------------------------------------------
---     Revision history.:  
-----------------------------------------------------------------------------
-col sp_username head "User Name" for a20
-col sp_tablespace_name head "Granted through" for a25
-col sp_privilege head "Privilege" for a25
-col sp_path head "Path" for a60
+COL sp_username HEAD "User Name" FOR a20
+COL sp_tablespace_name HEAD "Granted through" FOR a25
+COL sp_privilege HEAD "Privilege" FOR a25
+COL sp_path HEAD "Path" FOR a60
 
 SELECT 
   grantee sp_username, 
@@ -55,3 +53,4 @@ WHERE
   (grantee in (SELECT username FROM dba_users)
   OR grantee = 'PUBLIC')
 ORDER BY sp_username;
+-- EOF ---------------------------------------------------------------------
