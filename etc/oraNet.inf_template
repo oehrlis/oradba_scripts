@@ -1,0 +1,33 @@
+# ----------------------------------------------------------------------------
+# Trivadis - Part of Accenture, Platform Factory - Transactional Data Platform
+# Saegereistrasse 29, 8152 Glattbrugg, Switzerland
+# ----------------------------------------------------------------------------
+# Name.......: oraNet.inf
+# Author.....: Stefan Oehrli (oes) stefan.oehrli@trivadis.com
+# Editor.....: Stefan Oehrli
+# Date.......: 2021.12.07
+# Revision...: 
+# Purpose....: Init Configuration file for 389-ds
+# Notes......: create a new template file by running 
+#              dscreate create-template oraNet_template.inf
+# Reference..: https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/creating_a_new_ds_instance
+# License....: Apache License Version 2.0, January 2004 as shown
+#              at http://www.apache.org/licenses/
+# ----------------------------------------------------------------------------
+
+[general]
+full_machine_name = <HOSTNAME>
+start = True
+
+[slapd]
+instance_name = oraNet
+port = 389
+root_password = <PASSWORD>
+secure_port = 636
+self_sign_cert = True
+self_sign_cert_valid_months = 24
+
+[backend-userroot]
+create_suffix_entry = True
+suffix = <SUFFIX>
+# --- EOF --------------------------------------------------------------------
