@@ -21,7 +21,7 @@ author:
 - Stefan Oehrli
 # date is set by pandoc, uncomment the date line to explicitly set a date
 #date: 2020 November 06
-tvddocversion: 0.1.0
+tvddocversion: 0.1.1
 lang: de
 
 # - TVD Variables --------------------------------------------------------------
