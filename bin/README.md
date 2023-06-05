@@ -3,6 +3,14 @@
 This folder contains scripts and tools to administer TNS Names with OpenLDAP.
 These are in particular:
 
+- [exp_jobs.ksh](./exp_jobs.ksh) Monitor the current running DataPump jobs in
+  v$session_longops
+- [mos_download_url.sh](./mos_download_url.sh) Download Patch's from MOS
+  (My Oracle Support)
+- [rman_jobs.ksh](./rman_jobs.ksh) Monitor the current runing RMAN jobs in
+  v$session_longops
+- [test_scripts.sh](./test_scripts.sh) Script to test / verify all TNS utilities
+- [test_unit.sh](./test_unit.sh) Script to test / verify all TNS utilities
 - [tns_add.sh](./tns_add.sh) Script to add an *Oracle Net Service Name* with
   corresponding *Oracle Net Service Description* in one or more Base DN.
 - [tns_delete.sh](./tns_delete.sh) Script to delete an *Oracle Net Service Name*
@@ -18,6 +26,3 @@ These are in particular:
   one or more Base DN.
 - [tns_test.sh](./tns_test.sh) Script to test *Oracle Net Service Names* in one or
   more base DN. The tests are done with *tnsping* and *sqlplus*.
-
-Full documentation of the scripts is available as part of the documentation. See
-[Appendix C](../doc/9x93-Appendix-C_Scripts.md).

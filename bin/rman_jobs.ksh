@@ -1,27 +1,18 @@
-#!/bin/ksh -p
-# ---------------------------------------------------------------------------
-#               $Id: rman_jobs.ksh 2927 2006-12-07 15:24:04Z oracle $
-# ---------------------------------------------------------------------------
-#               sunrise, IT Technology, Database Operation Group
-#               Thurgauerstrasse 60, 8050 Zuerich, Switzerland
-# ---------------------------------------------------------------------------
-#		File-Name........:	rman_jobs.ksh
-#               Author...........:      Stefan Oehrli (oes) stefan.oehrli@sunrise.net
-#               Editor...........:      $LastChangedBy: oracle $
-#               Date.............:      $LastChangedDate: 2006-12-07 16:24:04 +0100 (Thu, 07 Dec 2006) $
-#               Revision.........:      $LastChangedRevision: 2927 $
-#		Purpose..........:	Monitor the current runing RMAN jobs in v$session_longops
-#		Usage............:	rman_jobs.ksh  [ORACLE_SID]
-#		Reference........:	Oracle9i Recovery Manager User's Guide
-#		Group/Privileges.:	--
-#		Input parameters.:	[ORACLE_SID] 	list of SID eg. DCRM01
-#							this is optional, if opmitted it takes the current SID
-#		Output.......... :	stout
-#		Restrictions.....:	unknown
-#		Notes............:	--
-# -------------------------------------------------------------------------
-#               Revision history.:      see svn log
-# -------------------------------------------------------------------------
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+# ------------------------------------------------------------------------------
+# Name.......: rman_jobs.ksh
+# Author.....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
+# Editor.....: Stefan Oehrli
+# Date.......: 2023.05.04
+# Version....: --
+# Purpose....: Monitor the current runing RMAN jobs in v$session_longops
+# Notes......: --
+# Reference..: --
+# License....: Apache License Version 2.0, January 2004 as shown
+#              at http://www.apache.org/licenses/
+# ------------------------------------------------------------------------------
 # Define initial values for sid_list
 if [ $# -ne 0 ]; then
  DB_SID=$*
@@ -57,3 +48,4 @@ FROM
    ORDER BY 1;
 EOI
 done
+# --- EOF ----------------------------------------------------------------------

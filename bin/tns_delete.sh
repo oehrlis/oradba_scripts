@@ -1,23 +1,22 @@
 #!/bin/bash
-# ----------------------------------------------------------------------------
-# Trivadis - Part of Accenture, Platform Factory - Transactional Data Platform
-# Saegereistrasse 29, 8152 Glattbrugg, Switzerland
-# ----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+# ------------------------------------------------------------------------------
 # Name.......: tns_delete.sh
-# Author.....: Stefan Oehrli (oes) stefan.oehrli@trivadis.com
+# Author.....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 # Editor.....: Stefan Oehrli
-# Date.......: 2022.02.23
-# Revision...: 
+# Date.......: 2023.05.04
+# Version....: v3.4.8
 # Purpose....: Delete a tns entry
 # Notes......: --
 # Reference..: --
 # License....: Apache License Version 2.0, January 2004 as shown
 #              at http://www.apache.org/licenses/
-# ----------------------------------------------------------------------------
-# - Customization ------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# - Customization --------------------------------------------------------------
 # - just add/update any kind of customized environment variable here
 
-# - End of Customization ----------------------------------------------------
+# - End of Customization -------------------------------------------------------
 
 # Define a bunch of bash option see 
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
@@ -25,13 +24,13 @@
 set -o nounset                      # exit if script try to use an uninitialised variable
 set -o errexit                      # exit script if any statement returns a non-true return value
 set -o pipefail                     # pipefail exit after 1st piped commands failed
-
-# - Environment Variables ---------------------------------------------------
+set -o noglob                       # Disable filename expansion (globbing).
+# - Environment Variables ------------------------------------------------------
 # define generic environment variables
-VERSION=v0.1.1
-TVDLDAP_VERBOSE=${TVDLDAP_VERBOSE:-"FALSE"} # enable verbose mode
-TVDLDAP_DEBUG=${TVDLDAP_DEBUG:-"FALSE"}     # enable debug mode
-TVDLDAP_QUIET=${TVDLDAP_QUIET:-"FALSE"}     # enable quiet mode
+VERSION=v3.4.8
+TVDLDAP_VERBOSE=${TVDLDAP_VERBOSE:-"FALSE"}                     # enable verbose mode
+TVDLDAP_DEBUG=${TVDLDAP_DEBUG:-"FALSE"}                         # enable debug mode
+TVDLDAP_QUIET=${TVDLDAP_QUIET:-"FALSE"}                         # enable quiet mode
 TVDLDAP_SCRIPT_NAME=$(basename ${BASH_SOURCE[0]})
 TVDLDAP_BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TVDLDAP_LOG_DIR="$(dirname ${TVDLDAP_BIN_DIR})/log"
@@ -39,14 +38,18 @@ TVDLDAP_LOG_DIR="$(dirname ${TVDLDAP_BIN_DIR})/log"
 # define logfile and logging
 LOG_BASE=${LOG_BASE:-"${TVDLDAP_LOG_DIR}"} # Use script log directory as default logbase
 TIMESTAMP=$(date "+%Y.%m.%d_%H%M%S")
+entries_deleted=0                          # Counter for deleted entries 
 readonly LOGFILE="$LOG_BASE/$(basename $TVDLDAP_SCRIPT_NAME .sh)_$TIMESTAMP.log"
-# - EOF Environment Variables -----------------------------------------------
+TVDLDAP_DUMP_FILE="$(basename $TVDLDAP_SCRIPT_NAME .sh)_dump_${TIMESTAMP}.ora"
+# define tempfile for the script
+TEMPFILE="$LOG_BASE/$(basename $TVDLDAP_SCRIPT_NAME .sh)_$$.ldif"
+# - EOF Environment Variables --------------------------------------------------
 
-# - Functions ---------------------------------------------------------------
-# ---------------------------------------------------------------------------
+# - Functions ------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Function...: Usage
 # Purpose....: Display Usage and exit script
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 function Usage() {
     
     # define default values for function arguments
@@ -86,7 +89,9 @@ function Usage() {
   Delete options:
     -S <NETSERVICE>     Oracle Net Service Names to delete (mandatory)
     -n                  Show what would be done but do not actually do it
-    -F                  Force mode to modify existing entry
+    -F                  Force mode to delete entries without backup
+    -B                  Bulk delete of Net Service Name. When enable bulk delete
+                        wildcards e.g. * will be supported for Net Service Name.
 
   Configuration file:
     The script does load configuration files to define default values as an
@@ -94,11 +99,7 @@ function Usage() {
     LDAP hostname TVDLDAP_LDAPHOST, etc. The configuration files are loaded in
     the following order:
 
-    1.  ${TVDLDAP_ETC_DIR}/${TOOL_BASE_NAME}.conf
-    2.  ${TVDLDAP_ETC_DIR}/${TOOL_BASE_NAME}_custom.conf
-    3.  ${ETC_BASE}/${TOOL_BASE_NAME}.conf
-    4.  ${ETC_BASE}/${TOOL_BASE_NAME}_custom.conf
-    5.  Command line parameter
+$((get_list_of_config && echo "Command line parameter")|cat -b)
 
   Logfile : ${LOGFILE}
 
@@ -106,12 +107,11 @@ EOI
     dump_runtime_config     # dump current tool specific environment in debug mode
     clean_quit ${error} ${error_value}
 }
-# - EOF Functions -----------------------------------------------------------
+# - EOF Functions --------------------------------------------------------------
 
-# - Initialization ----------------------------------------------------------
-# initialize logfile
-touch $LOGFILE 2>/dev/null
-exec &> >(tee -a "$LOGFILE") # Open standard out at `$LOG_FILE` for write.  
+# - Initialization -------------------------------------------------------------
+touch $LOGFILE 2>/dev/null          # initialize logfile
+exec &> >(tee -a "$LOGFILE")        # Open standard out at `$LOG_FILE` for write.  
 exec 2>&1  
 echo "INFO : Start ${TVDLDAP_SCRIPT_NAME} on host $(hostname) at $(date)"
 
@@ -123,10 +123,17 @@ else
     exit 5
 fi
 
-load_config                 # load configuration files. File list in TVDLDAP_CONFIG_FILES
+# define signal handling
+trap on_term TERM SEGV      # handle TERM SEGV using function on_term
+trap on_int INT             # handle INT using function on_int
+source_env                  # source oudbase or base environment if it does exists
+load_config                 # load configur26ation files. File list in TVDLDAP_CONFIG_FILES
+
+# initialize tempfile for the script
+touch $TEMPFILE 2>/dev/null || clean_quit 25 $TEMPFILE
 
 # get options
-while getopts mvdb:h:p:D:w:Wy:S:nFE: CurOpt; do
+while getopts mvdb:h:p:D:w:Wy:S:nFBE: CurOpt; do
     case ${CurOpt} in
         m) Usage 0;;
         v) TVDLDAP_VERBOSE="TRUE" ;;
@@ -139,6 +146,7 @@ while getopts mvdb:h:p:D:w:Wy:S:nFE: CurOpt; do
         W) TVDLDAP_BINDDN_PWDASK="TRUE";; 
         y) TVDLDAP_BINDDN_PWDFILE="${OPTARG}";; 
         F) TVDLDAP_FORCE="TRUE";; 
+        B) TVDLDAP_BULK="TRUE";; 
         n) TVDLDAP_DRYRUN="TRUE";; 
         S) NETSERVICE=${OPTARG};;
         E) clean_quit "${OPTARG}";;
@@ -165,10 +173,15 @@ export NETSERVICE=${NETSERVICE:-""}
 # check for Service and Arguments
 if [ -z "$NETSERVICE" ] && [ $# -ne 0 ]; then
     if [[ "$1" =~ ^-.*  ]]; then
-        NETSERVICE=$ORACLE_SID  # default service to ORACLE_SID if Argument starting with dash 
+        NETSERVICE=${ORACLE_SID:-""}  # default service to ORACLE_SID if Argument starting with dash 
     else
         NETSERVICE=$1           # default service to Argument if not starting with dash
     fi
+fi
+
+# check if net service argument is set to all or ALL
+if [ "${NETSERVICE^^}" == "ALL" ]; then
+        NETSERVICE="*"
 fi
 
 # check for mandatory parameters
@@ -187,57 +200,125 @@ if [ -z "$current_binddn" ] && [ -z "${current_bindpwd}" ]; then clean_quit 4; f
 
 # get base DN information
 BASEDN_LIST=$(get_basedn "$TVDLDAP_BASEDN")
-# - EOF Initialization -------------------------------------------------------
+
+# - EOF Initialization ----------------------------------------------------------
  
-# - Main ---------------------------------------------------------------------
+# - Main ------------------------------------------------------------------------
 echo_debug "DEBUG: Configuration / Variables:"
+echo_debug "DEBUG: ---------------------------------------------------------------------------------"
 echo_debug "DEBUG: LDAP Host............... = $TVDLDAP_LDAPHOST"
 echo_debug "DEBUG: LDAP Port............... = $TVDLDAP_LDAPPORT"
 echo_debug "DEBUG: Bind DN................. = $TVDLDAP_BINDDN"
-echo_debug "DEBUG: Bind PWD................ = $TVDLDAP_BINDDN_PWD"
+echo_debug "DEBUG: Bind PWD................ = $(echo_secret $TVDLDAP_BINDDN_PWD)"
 echo_debug "DEBUG: Bind PWD File........... = $TVDLDAP_BINDDN_PWDFILE"
-echo_debug "DEBUG: Bind parameter.......... = $current_binddn $current_bindpwd"
+echo_debug "DEBUG: Bind parameter.......... = $current_binddn $(echo_secret $current_bindpwd)"
 echo_debug "DEBUG: Base DN................. = $BASEDN_LIST"
 echo_debug "DEBUG: Net Service Names....... = $NETSERVICE"
 echo_debug "DEBUG: ldapsearch options...... = $ldapsearch_options"
+echo_debug "DEBUG: "
+
+if bulk_enabled; then
+    echo_debug "DEBUG: bulk mode enabled"
+    if ! force_enabled; then
+        # check if dumpfile does not exists
+        if [ -f "$TVDLDAP_LOG_DIR/$TVDLDAP_DUMP_FILE" ]; then
+            TVDLDAP_DUMP_FILE=$(basename $TVDLDAP_DUMP_FILE .ora)_pid$$.ora
+        fi
+        parameters="-o $TVDLDAP_DUMP_FILE -T $TVDLDAP_LOG_DIR"
+        parameters=$([ "${TVDLDAP_VERBOSE^^}" == "TRUE" ]   && echo "${parameters} -v" || echo ${parameters}) 
+        parameters=$([ "${TVDLDAP_DEBUG^^}" == "TRUE" ]     && echo "${parameters} -d" || echo ${parameters}) 
+        parameters=$([ "${TVDLDAP_BINDDN_PWDASK^^}" == "TRUE" ] && echo "${parameters} -W" || echo ${parameters}) 
+        parameters=$([ "${TVDLDAP_FORCE^^}" == "TRUE" ]     && echo "${parameters} -F" || echo ${parameters}) 
+        parameters=$([ -n "${TVDLDAP_BASEDN}" ]             && echo "${parameters} -b ${TVDLDAP_BASEDN}" || echo ${parameters}) 
+        parameters=$([ -n "${TVDLDAP_LDAPHOST}" ]           && echo "${parameters} -h ${TVDLDAP_LDAPHOST}" || echo ${parameters}) 
+        parameters=$([ -n "${TVDLDAP_LDAPPORT}" ]           && echo "${parameters} -p ${TVDLDAP_LDAPPORT}" || echo ${parameters}) 
+        parameters=$([ -n "${TVDLDAP_BINDDN}" ]             && echo "${parameters} -D ${TVDLDAP_BINDDN}" || echo ${parameters})  
+        parameters=$([ -n "${TVDLDAP_BINDDN_PWD}" ]         && echo "${parameters} -w ${TVDLDAP_BINDDN_PWD}" || echo ${parameters})  
+        parameters=$([ -n "${TVDLDAP_BINDDN_PWDFILE}" ]     && echo "${parameters} -y ${TVDLDAP_BINDDN_PWDFILE}" || echo ${parameters})  
+        parameters=$([ -n "${NETSERVICE}" ]                 && echo "${parameters} -S ${NETSERVICE}" || echo ${parameters}) 
+        tns_dump.sh $parameters
+    else
+        echo_debug "DEBUG: force mode enabled. Skip explcit backup."
+    fi
+fi
 
 for service in $(echo $NETSERVICE | tr "," "\n"); do  # loop over service
     echo_debug "DEBUG: process service $service"
     current_basedn=$(split_net_service_basedn ${service})
     current_cn=$(split_net_service_cn ${service})
 
-    # Set BASEDN_LIST to current Base DN from Net Service Name
+    # Set BASEDN_LIST to current Base DN taken from Net Service Name
     if [ -n "${current_basedn}" ]; then
         BASEDN_LIST=${current_basedn}
     else 
         BASEDN_LIST=$(get_basedn "$TVDLDAP_BASEDN")
     fi
-    echo_debug "DEBUG: current Base DN list         = $BASEDN_LIST"
-    echo_debug "DEBUG: current Net Service Names    = $current_cn"
-
-    # loop over base DN
-    for basedn in ${BASEDN_LIST}; do 
-            if basedn_exists ${basedn}; then
-            echo_debug "DEBUG: Process base dn $basedn"
-            if net_service_exists "$current_cn" "${basedn}" ; then
-                echo "INFO : Delete Net Service Name $current_cn in $basedn" 
-                if ! dryrun_enabled; then
-                    ldapdelete -h ${TVDLDAP_LDAPHOST} -p ${TVDLDAP_LDAPPORT} \
-                        ${current_binddn:+"$current_binddn"} ${current_bindpwd} \
-                        "cn=$current_cn,cn=OracleContext,$basedn"
-                    
-                    # check if last command did run successfully
-                    if [ $? -ne 0 ]; then clean_quit 33 "ldapdelete"; fi
-                else
-                    echo "INFO : Dry run enabled, skip delete Net Service Name $current_cn in $basedn"
-                fi
-            else
-                echo "WARN : Net Service Name $current_cn does not exists in $current_basedn."
+    echo_debug "DEBUG: current Base DN list........ = $BASEDN_LIST"
+    echo_debug "DEBUG: current Net Service Names... = $current_cn"
+    for basedn in ${BASEDN_LIST}; do                # loop over base DN
+        if basedn_exists ${basedn}; then
+            echo "INFO : Process base dn $basedn"
+            domain=$(echo $basedn|sed -e 's/,dc=/\./g' -e 's/dc=//g')
+            if ! alias_enabled; then
+                # run ldapsearch an write output to tempfile
+                echo_debug "DEBUG: current ldap command => ldapsearch -h ${TVDLDAP_LDAPHOST} -p ${TVDLDAP_LDAPPORT} \
+                    ${current_binddn:+\"$current_binddn\"} ${current_bindpwd} \
+                    ${ldapsearch_options} -b \"$basedn\" -s sub \
+                    \"(&(cn=${current_cn})(|(objectClass=orclNetService)(objectClass=orclService)(objectClass=orclNetServiceAlias)))\" \
+                    dn"
+                ldapsearch -h ${TVDLDAP_LDAPHOST} -p ${TVDLDAP_LDAPPORT} \
+                    ${current_binddn:+"$current_binddn"} ${current_bindpwd} \
+                    ${ldapsearch_options} -b "$basedn" -s sub \
+                    "(&(cn=${current_cn})(|(objectClass=orclNetService)(objectClass=orclService)(objectClass=orclNetServiceAlias)))" \
+                    dn >$TEMPFILE
+                # check if last command did run successfully
+                if [ $? -ne 0 ]; then clean_quit 33 "ldapsearch"; fi
             fi
+            # check if tempfile does exist and has some values
+            if [ -s "$TEMPFILE" ]; then
+                echo "" >> $TEMPFILE    # add a new line to the tempfile
+                lines=$(grep -i '^dn: ' $TEMPFILE|wc -l)
+                if [ $lines -gt 1 ] && ! bulk_enabled; then
+                    clean_quit 40 $lines
+                fi
+                while read -r result; do        # loop over ldapsearch results
+                    echo_debug "DEBUG: process ldap result => ${result}"
+                    cn=$(echo ${result}| sed 's/^dn: //')
+                    if ! dryrun_enabled; then
+                        ldapdelete -h ${TVDLDAP_LDAPHOST} -p ${TVDLDAP_LDAPPORT} \
+                            ${current_binddn:+"$current_binddn"} ${current_bindpwd} \
+                            "$cn"
+                    
+                        # check if last command did run successfully
+                        if [ $? -ne 0 ]; then clean_quit 33 "ldapdelete"; fi    
+                        entries_deleted=$((entries_deleted+1))  # Count loaded entries
+                    else
+                        echo "INFO : Dry run enabled, skip delete Net Service Name $cn"
+                    fi
+                done < <(grep -i '^dn: ' $TEMPFILE)
+            else
+                printf $TNS_INFO'\n' "WARN : Net Service Name / Alias ${current_cn} not found in ${basedn}"
+            fi
+        else
+            printf $TNS_INFO'\n' "WARN : Base DN ${basedn} not found"
         fi
     done
 done
 
+if bulk_enabled; then
+    echo "INFO :"
+    echo "INFO : Status information about bulk delete process"
+    echo "INFO : Processed BaseDN........ = ${BASEDN_LIST}"
+    echo "INFO : Net Service Names....... = $NETSERVICE"
+    echo "INFO : Deleted TNS entries..... = $entries_deleted"
+    if ! force_enabled; then
+        echo "INFO : Deleted TNS entries are dumped into $TVDLDAP_LOG_DIR/$TVDLDAP_DUMP_FILE"
+        echo "INFO : run tns_load.sh -t $TVDLDAP_LOG_DIR/$TVDLDAP_DUMP_FILE to reload them"
+    else
+        echo "INFO : Force mode enabled, no dump created."
+    fi
+fi
+
 rotate_logfiles                     # purge log files based on TVDLDAP_KEEP_LOG_DAYS
 clean_quit                          # clean exit with return code 0
-# --- EOF --------------------------------------------------------------------
+# --- EOF ----------------------------------------------------------------------

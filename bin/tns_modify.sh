@@ -1,23 +1,22 @@
 #!/bin/bash
-# ----------------------------------------------------------------------------
-# Trivadis - Part of Accenture, Platform Factory - Transactional Data Platform
-# Saegereistrasse 29, 8152 Glattbrugg, Switzerland
-# ----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+# ------------------------------------------------------------------------------
 # Name.......: tns_modify.sh
-# Author.....: Stefan Oehrli (oes) stefan.oehrli@trivadis.com
+# Author.....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 # Editor.....: Stefan Oehrli
-# Date.......: 2022.02.23
-# Revision...: 
+# Date.......: 2023.05.04
+# Version....: v3.4.8
 # Purpose....: Modify a tns entry
 # Notes......: --
 # Reference..: --
 # License....: Apache License Version 2.0, January 2004 as shown
 #              at http://www.apache.org/licenses/
-# ----------------------------------------------------------------------------
-# - Customization ------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# - Customization --------------------------------------------------------------
 # - just add/update any kind of customized environment variable here
 
-# - End of Customization ----------------------------------------------------
+# - End of Customization -------------------------------------------------------
 
 # Define a bunch of bash option see 
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
@@ -25,13 +24,13 @@
 set -o nounset                      # exit if script try to use an uninitialised variable
 set -o errexit                      # exit script if any statement returns a non-true return value
 set -o pipefail                     # pipefail exit after 1st piped commands failed
-
-# - Environment Variables ---------------------------------------------------
+set -o noglob                       # Disable filename expansion (globbing).
+# - Environment Variables ------------------------------------------------------
 # define generic environment variables
-VERSION=v0.1.1
-TVDLDAP_VERBOSE=${TVDLDAP_VERBOSE:-"FALSE"} # enable verbose mode
-TVDLDAP_DEBUG=${TVDLDAP_DEBUG:-"FALSE"}     # enable debug mode
-TVDLDAP_QUIET=${TVDLDAP_QUIET:-"FALSE"}     # enable quiet mode
+VERSION=v3.4.8
+TVDLDAP_VERBOSE=${TVDLDAP_VERBOSE:-"FALSE"}                     # enable verbose mode
+TVDLDAP_DEBUG=${TVDLDAP_DEBUG:-"FALSE"}                         # enable debug mode
+TVDLDAP_QUIET=${TVDLDAP_QUIET:-"FALSE"}                         # enable quiet mode
 TVDLDAP_SCRIPT_NAME=$(basename ${BASH_SOURCE[0]})
 TVDLDAP_BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TVDLDAP_LOG_DIR="$(dirname ${TVDLDAP_BIN_DIR})/log"
@@ -40,13 +39,13 @@ TVDLDAP_LOG_DIR="$(dirname ${TVDLDAP_BIN_DIR})/log"
 LOG_BASE=${LOG_BASE:-"${TVDLDAP_LOG_DIR}"} # Use script log directory as default logbase
 TIMESTAMP=$(date "+%Y.%m.%d_%H%M%S")
 readonly LOGFILE="$LOG_BASE/$(basename $TVDLDAP_SCRIPT_NAME .sh)_$TIMESTAMP.log"
-# - EOF Environment Variables -----------------------------------------------
+# - EOF Environment Variables --------------------------------------------------
 
-# - Functions ---------------------------------------------------------------
-# ---------------------------------------------------------------------------
+# - Functions ------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Function...: Usage
 # Purpose....: Display Usage and exit script
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 function Usage() {
     
     # define default values for function arguments
@@ -70,7 +69,7 @@ function Usage() {
                         by setting TVDLDAP_LDAPHOST.
     -p <PORT>           port on LDAP server (default take from ldap.ora). Can be
                         specified by setting TVDLDAP_LDAPPORT.
-                        
+
   Bind Options:
     -D <BINDDN>         Bind DN (default ANONYMOUS). Can be specified by setting
                         TVDLDAP_BINDDN.
@@ -88,18 +87,14 @@ function Usage() {
                         Oracle Net Service Name for the alias
     -n                  Show what would be done but do not actually do it
     -F                  Force mode to add entry it it does not exists
-    
+
   Configuration file:
     The script does load configuration files to define default values as an
     alternative for command line parameter. e.g. to set a bind DN TVDLDAP_BINDDN
     LDAP hostname TVDLDAP_LDAPHOST, etc. The configuration files are loaded in
     the following order:
 
-    1.  ${TVDLDAP_ETC_DIR}/${TOOL_BASE_NAME}.conf
-    2.  ${TVDLDAP_ETC_DIR}/${TOOL_BASE_NAME}_custom.conf
-    3.  ${ETC_BASE}/${TOOL_BASE_NAME}.conf
-    4.  ${ETC_BASE}/${TOOL_BASE_NAME}_custom.conf
-    5.  Command line parameter
+$((get_list_of_config && echo "Command line parameter")|cat -b)
 
   Logfile : ${LOGFILE}
 
@@ -107,9 +102,9 @@ EOI
     dump_runtime_config     # dump current tool specific environment in debug mode
     clean_quit ${error} ${error_value}
 }
-# - EOF Functions -----------------------------------------------------------
+# - EOF Functions --------------------------------------------------------------
 
-# - Initialization ----------------------------------------------------------
+# - Initialization -------------------------------------------------------------
 # initialize logfile
 touch $LOGFILE 2>/dev/null
 exec &> >(tee -a "$LOGFILE") # Open standard out at `$LOG_FILE` for write.  
@@ -124,7 +119,11 @@ else
     exit 5
 fi
 
-load_config                 # load configuration files. File list in TVDLDAP_CONFIG_FILES
+# define signal handling
+trap on_term TERM SEGV      # handle TERM SEGV using function on_term
+trap on_int INT             # handle INT using function on_int
+source_env                  # source oudbase or base environment if it does exists
+load_config                 # load configur26ation files. File list in TVDLDAP_CONFIG_FILES
 
 # get options
 while getopts mvdb:h:p:D:w:Wy:S:N:nFAE: CurOpt; do
@@ -181,7 +180,7 @@ ask_bindpwd                         # ask for the bind password if TVDLDAP_BINDD
                                     # is TRUE and LDAP tools are not OpenLDAP
 current_binddn=$(get_binddn_param "$TVDLDAP_BINDDN" )
 current_bindpwd=$(get_bindpwd_param "$TVDLDAP_BINDDN_PWD" ${TVDLDAP_BINDDN_PWDASK} "$TVDLDAP_BINDDN_PWDFILE")
-if [ -z "$current_binddn" ] && [ -z "${current_bindpwd}" ]; then clean_quit 4; fi
+if [ -z "${current_binddn}" ] && [ -z "${current_bindpwd}" ]; then clean_quit 4; fi
 
 # get base DN information
 BASEDN_LIST=$(get_basedn "$TVDLDAP_BASEDN")
@@ -189,16 +188,17 @@ BASEDN_LIST=$(get_basedn "$TVDLDAP_BASEDN")
 # Split Net Service Name if full qualified e.g. with a dot
 current_basedn=$(split_net_service_basedn ${NETSERVICE})
 current_cn=$(split_net_service_cn ${NETSERVICE})
-# - EOF Initialization -------------------------------------------------------
+# - EOF Initialization ---------------------------------------------------------
  
-# - Main ---------------------------------------------------------------------
+# - Main -----------------------------------------------------------------------
 echo_debug "DEBUG: Configuration / Variables:"
+echo_debug "DEBUG: --------------------------------------------------------------------------"
 echo_debug "DEBUG: LDAP Host............... = $TVDLDAP_LDAPHOST"
 echo_debug "DEBUG: LDAP Port............... = $TVDLDAP_LDAPPORT"
 echo_debug "DEBUG: Bind DN................. = $TVDLDAP_BINDDN"
-echo_debug "DEBUG: Bind PWD................ = $TVDLDAP_BINDDN_PWD"
+echo_debug "DEBUG: Bind PWD................ = $(echo_secret $TVDLDAP_BINDDN_PWD)"
 echo_debug "DEBUG: Bind PWD File........... = $TVDLDAP_BINDDN_PWDFILE"
-echo_debug "DEBUG: Bind parameter.......... = $current_binddn $current_bindpwd"
+echo_debug "DEBUG: Bind parameter.......... = $current_binddn $(echo_secret $current_bindpwd)"
 echo_debug "DEBUG: Base DN................. = $BASEDN_LIST"
 echo_debug "DEBUG: Net Service Names....... = $NETSERVICE"
 echo_debug "DEBUG: Net Service Name CN..... = $current_cn"
@@ -207,6 +207,7 @@ echo_debug "DEBUG: Net Service Description. = $NETDESCSTRING"
 echo_debug "DEBUG: Net Service Alias....... = $TVDLDAP_NETALIAS"
 echo_debug "DEBUG: ldapmodify options...... = $ldapmodify_options"
 echo_debug "DEBUG: ldapadd options......... = $ldapadd_options"
+echo_debug "DEBUG: "
 
 # Set BASEDN_LIST to current Base DN from Net Service Name
 if [ -n "${current_basedn}" ]; then BASEDN_LIST=${current_basedn}; fi
@@ -214,7 +215,7 @@ if [ -n "${current_basedn}" ]; then BASEDN_LIST=${current_basedn}; fi
 # loop over base DN
 for basedn in ${BASEDN_LIST}; do 
     echo_debug "DEBUG: Process base dn $basedn"
-    if ! net_service_exists "$current_cn" "${basedn}" ; then
+    if ! net_service_exists "$current_cn" "${basedn}" "${current_binddn}" "${current_bindpwd}"; then
         if force_enabled; then
             echo "INFO : Add Net Service Name $current_cn in $basedn" 
             if ! dryrun_enabled; then
@@ -250,7 +251,7 @@ EOI
                 echo "INFO : Dry run enabled, skip add Net Service Name $current_cn in $basedn"
             fi
         else
-            echo "WARN : Net Service Name $current_cn does not exists in $current_basedn. Enable force mode to add it."
+            printf $TNS_INFO'\n' "WARN : Net Service Name $current_cn does not exists in $current_basedn. Enable force mode to add it."
         fi
     else
         echo "INFO : Modify Net Service Name $current_cn in $current_basedn"
@@ -285,4 +286,4 @@ done
 
 rotate_logfiles                     # purge log files based on TVDLDAP_KEEP_LOG_DAYS
 clean_quit                          # clean exit with return code 0
-# --- EOF --------------------------------------------------------------------
+# --- EOF ----------------------------------------------------------------------

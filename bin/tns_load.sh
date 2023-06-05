@@ -1,24 +1,23 @@
 #!/bin/bash
-# ----------------------------------------------------------------------------
-# Trivadis - Part of Accenture, Platform Factory - Transactional Data Platform
-# Saegereistrasse 29, 8152 Glattbrugg, Switzerland
-# ----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+# ------------------------------------------------------------------------------
 # Name.......: tns_load.sh
-# Author.....: Stefan Oehrli (oes) stefan.oehrli@trivadis.com
+# Author.....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 # Editor.....: Stefan Oehrli
-# Date.......: 2022.02.23
-# Revision...: 
+# Date.......: 2023.05.04
+# Version....: v3.4.8
 # Purpose....: Load a tnsnames.ora
 # Notes......: --
 # Reference..: --
 # License....: Apache License Version 2.0, January 2004 as shown
 #              at http://www.apache.org/licenses/
-# ----------------------------------------------------------------------------
-# - Customization ------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# - Customization --------------------------------------------------------------
 # - just add/update any kind of customized environment variable here
-DEFAULT_OUTPUT_DIR=$TNS_ADMIN
+DEFAULT_OUTPUT_DIR=${TNS_ADMIN:-$(pwd)}
 DEFAULT_FILE_PREFIX="ldap_dump"
-# - End of Customization ----------------------------------------------------
+# - End of Customization -------------------------------------------------------
 
 # Define a bunch of bash option see 
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
@@ -26,28 +25,34 @@ DEFAULT_FILE_PREFIX="ldap_dump"
 set -o nounset                      # exit if script try to use an uninitialised variable
 set -o errexit                      # exit script if any statement returns a non-true return value
 set -o pipefail                     # pipefail exit after 1st piped commands failed
-
-# - Environment Variables ---------------------------------------------------
+set -o noglob                       # Disable filename expansion (globbing).
+# - Environment Variables ------------------------------------------------------
 # define generic environment variables
-VERSION=v0.1.1
-TVDLDAP_VERBOSE=${TVDLDAP_VERBOSE:-"FALSE"} # enable verbose mode
-TVDLDAP_DEBUG=${TVDLDAP_DEBUG:-"FALSE"}     # enable debug mode
-TVDLDAP_QUIET=${TVDLDAP_QUIET:-"FALSE"}     # enable quiet mode
+VERSION=v3.4.8
+TVDLDAP_VERBOSE=${TVDLDAP_VERBOSE:-"FALSE"}                     # enable verbose mode
+TVDLDAP_DEBUG=${TVDLDAP_DEBUG:-"FALSE"}                         # enable debug mode
+TVDLDAP_QUIET=${TVDLDAP_QUIET:-"FALSE"}                         # enable quiet mode
 TVDLDAP_SCRIPT_NAME=$(basename ${BASH_SOURCE[0]})
 TVDLDAP_BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TVDLDAP_LOG_DIR="$(dirname ${TVDLDAP_BIN_DIR})/log"
-
+files_processed=0                           # Counter for processed files 
+entries_processed=0                         # Counter for processed entries 
+entries_loaded=0                            # Counter for loaded entries 
+entries_skipped=0                           # Counter for skipped entries 
+entries_rejected=0                          # Counter for rejected entries 
+basedn_processed=""                         # BaseDN processed
+basedn_array=()                             # BaseDN array
 # define logfile and logging
 LOG_BASE=${LOG_BASE:-"${TVDLDAP_LOG_DIR}"} # Use script log directory as default logbase
 TIMESTAMP=$(date "+%Y.%m.%d_%H%M%S")
 readonly LOGFILE="$LOG_BASE/$(basename $TVDLDAP_SCRIPT_NAME .sh)_$TIMESTAMP.log"
-# - EOF Environment Variables -----------------------------------------------
+# - EOF Environment Variables --------------------------------------------------
 
-# - Functions ---------------------------------------------------------------
-# ---------------------------------------------------------------------------
+# - Functions ------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Function...: Usage
 # Purpose....: Display Usage and exit script
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 function Usage() {
     
     # define default values for function arguments
@@ -92,11 +97,7 @@ function Usage() {
     LDAP hostname TVDLDAP_LDAPHOST, etc. The configuration files are loaded in
     the following order:
 
-    1.  ${TVDLDAP_ETC_DIR}/${TOOL_BASE_NAME}.conf
-    2.  ${TVDLDAP_ETC_DIR}/${TOOL_BASE_NAME}_custom.conf
-    3.  ${ETC_BASE}/${TOOL_BASE_NAME}.conf
-    4.  ${ETC_BASE}/${TOOL_BASE_NAME}_custom.conf
-    5.  Command line parameter
+$((get_list_of_config && echo "Command line parameter")|cat -b)
 
   Logfile : ${LOGFILE}
 
@@ -104,9 +105,9 @@ EOI
     dump_runtime_config     # dump current tool specific environment in debug mode
     clean_quit ${error} ${error_value}
 }
-# - EOF Functions -----------------------------------------------------------
+# - EOF Functions --------------------------------------------------------------
 
-# - Initialization ----------------------------------------------------------
+# - Initialization -------------------------------------------------------------
 # initialize logfile
 touch $LOGFILE 2>/dev/null
 exec &> >(tee -a "$LOGFILE") # Open standard out at `$LOG_FILE` for write.  
@@ -121,7 +122,11 @@ else
     exit 5
 fi
 
-load_config                 # load configuration files. File list in TVDLDAP_CONFIG_FILES
+# define signal handling
+trap on_term TERM SEGV      # handle TERM SEGV using function on_term
+trap on_int INT             # handle INT using function on_int
+source_env                  # source oudbase or base environment if it does exists
+load_config                 # load configur26ation files. File list in TVDLDAP_CONFIG_FILES
 
 # get options
 while getopts mvdb:h:p:D:w:Wy:t:FnE: CurOpt; do
@@ -180,22 +185,25 @@ if [ -z "$current_binddn" ] && [ -z "${current_bindpwd}" ]; then clean_quit 4; f
 if [ "${TVDLDAP_BASEDN^^}" == "ALL" ]; then clean_quit 32 ${TVDLDAP_SCRIPT_NAME} ;fi
 common_basedn=$(get_basedn "$TVDLDAP_BASEDN")
 
-# - EOF Initialization -------------------------------------------------------
+# - EOF Initialization ----------------------------------------------------------
  
-# - Main ---------------------------------------------------------------------
+# - Main ------------------------------------------------------------------------
 echo_debug "DEBUG: Configuration / Variables:"
+echo_debug "---------------------------------------------------------------------------------"
 echo_debug "DEBUG: LDAP Host............... = $TVDLDAP_LDAPHOST"
 echo_debug "DEBUG: LDAP Port............... = $TVDLDAP_LDAPPORT"
 echo_debug "DEBUG: Bind DN................. = $TVDLDAP_BINDDN"
-echo_debug "DEBUG: Bind PWD................ = $TVDLDAP_BINDDN_PWD"
+echo_debug "DEBUG: Bind PWD................ = $(echo_secret $TVDLDAP_BINDDN_PWD)"
 echo_debug "DEBUG: Bind PWD File........... = $TVDLDAP_BINDDN_PWDFILE"
-echo_debug "DEBUG: Bind parameter.......... = $current_binddn $current_bindpwd"
+echo_debug "DEBUG: Bind parameter.......... = $current_binddn $(echo_secret $current_bindpwd)"
 echo_debug "DEBUG: Common Base DN.......... = $common_basedn"
 echo_debug "DEBUG: tnsnames file........... = $TNSNAMES_FILES"
 echo_debug "DEBUG: ldapmodify options...... = $ldapmodify_options"
 echo_debug "DEBUG: ldapadd options......... = $ldapadd_options"
+echo_debug "DEBUG: "
 
 for file in $TNSNAMES_FILES; do
+    files_processed=$((files_processed+1))      # Count processed files
     echo_debug "DEBUG: Start to process file $file"
     # check if we can access the file
     if [ ! -f "${file}" ]; then clean_quit 22 "${file}"; fi
@@ -205,6 +213,7 @@ for file in $TNSNAMES_FILES; do
 
     # start to read the file
     while IFS= read -r line ; do
+        entries_processed=$((entries_processed+1))  # Count processed entries
         net_service=$(echo $line| cut -d'=' -f1)
         current_cn=$(split_net_service_cn ${net_service})         # get pure Net Service Name
         current_basedn=$(split_net_service_basedn ${net_service}) 
@@ -212,25 +221,28 @@ for file in $TNSNAMES_FILES; do
         NetDescString=$(echo $line| cut -d'=' -f2-)
         # check for , in service name => reject
         if [[ "${net_service}" == *","* ]]; then
-            echo "WARN : Can not handle comma in Net Service Name, reject Net Service Name ${net_service}"
+            printf $TNS_INFO'\n' "WARN : Can not handle comma in Net Service Name, reject Net Service Name ${net_service}"
             echo "# Can not handle comma in Net Service Name ${net_service}" >>"${file}_reject" || clean_quit 23 ${file}_reject
             echo "${net_service}=${NetDescString}" >>"${file}_reject"
+            entries_rejected=$((entries_rejected+1))      # Count rejeced entries
             continue
         fi
 
         # check if base DN exists => reject
         if ! basedn_exists ${current_basedn}; then
-            echo "WARN : Base DN ${current_basedn} does not exists, reject Net Service Name ${net_service}"
+            printf $TNS_INFO'\n' "WARN : Base DN ${current_basedn} does not exists, reject Net Service Name ${net_service}"
             echo "# Base DN ${current_basedn} does not exists, reject Net Service Name ${net_service}" >>"${file}_reject"
             echo "${net_service}=${NetDescString}" >>"${file}_reject"
+            entries_rejected=$((entries_rejected+1))      # Count rejeced entries
             continue
         fi
         echo_debug "DEBUG: Net Service Name => $net_service"
         echo_debug "DEBUG: cn               => $current_cn"
         echo_debug "DEBUG: basedn           => $current_basedn"
         echo_debug "DEBUG: NetDescString    => $NetDescString"
+        basedn_array+=("$current_basedn")
         # check if net service entry exists => skip if force = FALSE
-        if ! net_service_exists "$current_cn" "${current_basedn}" ; then
+        if ! net_service_exists "$current_cn" "${current_basedn}" "${current_binddn}" "${current_bindpwd}"; then
             echo "INFO : Add Net Service Name $net_service in $current_basedn" 
             if ! dryrun_enabled; then
                 $ldapadd_command -h ${TVDLDAP_LDAPHOST} -p ${TVDLDAP_LDAPPORT} \
@@ -245,6 +257,7 @@ orclNetDescString: $NetDescString
 EOI
                 # check if last command did run successfully
                 if [ $? -ne 0 ]; then clean_quit 33 "$ldapadd_command"; fi
+                entries_loaded=$((entries_loaded+1))  # Count loaded entries
             else
                 echo "INFO : Dry run enabled, skip add Net Service Name $current_cn in $current_basedn"
             fi
@@ -263,18 +276,30 @@ orclNetDescString: $NetDescString
 EOI
                     # check if last command did run successfully
                     if [ $? -ne 0 ]; then clean_quit 33 "ldapmodify"; fi
+                    entries_loaded=$((entries_loaded+1))  # Count loaded entries
                 else
                     echo "INFO : Dry run enabled, skip modify Net Service Name $current_cn in $current_basedn"
                 fi
             else
-                echo "WARN : Net Service Name does exists in $current_basedn, skip ${net_service}"
+                printf $TNS_INFO'\n' "WARN : Net Service Name does exists in $current_basedn, skip ${net_service}"
                 echo "# Net Service Name does exists in $current_basedn, skip ${net_service}" >>"${file}_skip"
                 echo "${net_service}=${NetDescString}" >>"${file}_skip"
+                entries_skipped=$((entries_skipped+1))      # Count skipped entries
             fi
         fi
-    done < <(cat ${file}|sed -e 's/^#\s*$/DELIM/g' -e 's/^\s*$/DELIM/g'|grep -v '^#'| sed -e 's/\s*//g' -e '/^[a-zA-Z0-9.]*=/s/^/DELIM\n/'|tr -d '\n'| sed -e 's/DELIM/\n/g' -e 's/$/\n/' |sed '/^$/d')
+    done < <(grep -v ^\# ${file} | join_dotora | grep . )
 done
+basedn_processed=$(printf "%s\n" "${basedn_array[@]}" | sort -u)
+basedn_processed=${basedn_processed//$'\n'/' '}
+echo "INFO :"
+echo "INFO : Status information about the loading process"
+echo "INFO : Processed BaseDN...... = $basedn_processed"
+echo "INFO : Processed files....... = $files_processed"
+echo "INFO : Processed TNS entries. = $entries_processed"
+echo "INFO : Loaded TNS entries.... = $entries_loaded"
+echo "INFO : Skipped TNS entries... = $entries_skipped"
+echo "INFO : Rejected TNS entries.. = $entries_rejected"
 
 rotate_logfiles                     # purge log files based on TVDLDAP_KEEP_LOG_DAYS
 clean_quit                          # clean exit with return code 0
-# --- EOF --------------------------------------------------------------------
+# --- EOF ----------------------------------------------------------------------

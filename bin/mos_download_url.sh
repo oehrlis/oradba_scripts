@@ -1,36 +1,34 @@
-# -------------------------------------------------------------------------------------
-#    $Id: $
-# -------------------------------------------------------------------------------------
-#    Trivadis AG, Infrastructure Managed Services
-#    Europa-Strasse 5, 8152 Glattbrugg, Switzerland
-# -------------------------------------------------------------------------------------
-#    File-Name........:  mos_download_url.sh
-#    Author...........:  Stefan Oehrli (oes) stefan.oehrli@trivadis.com
-#    Editor...........:  $LastChangedBy: $
-#    Date.............:  22. April 2011
-#    Revision.........:  1.0
-#    Purpose..........:  Download Patch's from MOS (My Oracle Support)
-#    Usage............:  mos_download_url.sh -u <USER> -p <PASSWORD> -f <download_url_file.txt>
-#    File formats.....:  dont use files
-#    Restrictions.....:  unknown
-#    Notes............:  --
-# -------------------------------------------------------------------------------------
-#    Revision history.:  
-#    22.04.2011    soe   initial release
-# -------------------------------------------------------------------------------------
-# GLOBAL VARS #############################################################
-## MOS Account
-MOS_USER=ACCOUNT
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+# ------------------------------------------------------------------------------
+# Name.......: mos_download_url.sh
+# Author.....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
+# Editor.....: Stefan Oehrli
+# Date.......: 2023.05.04
+# Version....: --
+# Purpose....: Download Patch's from MOS (My Oracle Support)
+# Usage......: mos_download_url.sh -u <USER> -p <PASSWORD> -f <download_url_file.txt>
+# Notes......: --
+# Reference..: --
+# License....: Apache License Version 2.0, January 2004 as shown
+#              at http://www.apache.org/licenses/
+# ------------------------------------------------------------------------------
+# - Customization --------------------------------------------------------------
+# - just add/update any kind of customized environment variable here
+MOS_USER=ACCOUNT            # # MOS Account Credentials
 MOS_PASSWORD=PASSWORD
+# - End of Customization -------------------------------------------------------
 
-# ---- You should not have to change anything below this line -------------
+# - Environment Variables ------------------------------------------------------
 WGET=/usr/bin/wget                               # path to wget
 LOGDIR=$(pwd -P $(dirname $0))
 MyName="`basename $0`"                           # script name
 DOWNLOAD_FILE=${MyName}.txt
 LOGFILE=${LOGDIR}/${MyName}-$(date +%m-%d-%y-%H%M).log
-# END OF GLOBAL VARS ######################################################
-# FUNCTIONS
+# - EOF Environment Variables --------------------------------------------------
+
+# - Functions ------------------------------------------------------------------
 #---------------------------------------------------------------------
 Usage()
 #
@@ -44,10 +42,9 @@ Usage()
     echo "INFO :        -f <FILE>      Text file with download url"
     echo "INFO :                       Logfile : ${LOGFILE}"
 }
-# END OF FUNCTIONS ########################################################
+# - EOF Functions --------------------------------------------------------------
 
-
-# MAIN ####################################################################
+# - Initialization -------------------------------------------------------------
 if [ $# -lt 1 ]; then                         				# Exit if no. of command line args is 0
 	Usage
 	exit 1
@@ -66,7 +63,9 @@ do
             exit 1;;                                        # exit with error code 1
     esac
 done
-
+# - EOF Initialization ---------------------------------------------------------
+ 
+# - Main -----------------------------------------------------------------------
 test -f $DOWNLOAD_FILE|| (echo "Can not access download file ${DOWNLOAD_FILE}" && exit 1)
 for i in $(cat $DOWNLOAD_FILE|grep -v ^#)
 do
@@ -74,5 +73,4 @@ OUTPUT_FILE=$(echo "$i"|cut -d= -f3)
 echo "download $OUTPUT_FILE from '$i'" >> $LOGFILE 2>&1
 ${WGET} --http-user=$MOS_USER --http-password=$MOS_PASSWORD --no-check-certificate -O $OUTPUT_FILE "$i" >> $LOGFILE 2>&1
 done
-# END OF MAIN #############################################################
-# EOF #####################################################################
+# --- EOF ----------------------------------------------------------------------

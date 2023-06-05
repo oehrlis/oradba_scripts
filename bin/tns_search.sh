@@ -1,37 +1,36 @@
 #!/bin/bash
-# ----------------------------------------------------------------------------
-# Trivadis - Part of Accenture, Platform Factory - Transactional Data Platform
-# Saegereistrasse 29, 8152 Glattbrugg, Switzerland
-# ----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+# ------------------------------------------------------------------------------
 # Name.......: tns_search.sh
-# Author.....: Stefan Oehrli (oes) stefan.oehrli@trivadis.com
+# Author.....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 # Editor.....: Stefan Oehrli
-# Date.......: 2022.02.23
-# Revision...: 
+# Date.......: 2023.05.04
+# Version....: v3.4.8
 # Purpose....: Search a tns entry
 # Notes......: --
 # Reference..: --
 # License....: Apache License Version 2.0, January 2004 as shown
 #              at http://www.apache.org/licenses/
-# ----------------------------------------------------------------------------
-# - Customization ------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# - Customization --------------------------------------------------------------
 # - just add/update any kind of customized environment variable here
 
-# - End of Customization ----------------------------------------------------
+# - End of Customization -------------------------------------------------------
 
 # Define a bunch of bash option see 
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 # https://www.davidpashley.com/articles/writing-robust-shell-scripts/
 set -o nounset                      # exit if script try to use an uninitialised variable
-set -o errexit                      # exit script if any statement returns a non-true return value
-set -o pipefail                     # pipefail exit after 1st piped commands failed
-
-# - Environment Variables ---------------------------------------------------
+# set -o errexit                      # exit script if any statement returns a non-true return value
+# set -o pipefail                     # pipefail exit after 1st piped commands failed
+set -o noglob                       # Disable filename expansion (globbing).
+# - Environment Variables ------------------------------------------------------
 # define generic environment variables
-VERSION=v0.1.1
-TVDLDAP_VERBOSE=${TVDLDAP_VERBOSE:-"FALSE"} # enable verbose mode
-TVDLDAP_DEBUG=${TVDLDAP_DEBUG:-"FALSE"}     # enable debug mode
-TVDLDAP_QUIET=${TVDLDAP_QUIET:-"FALSE"}     # enable quiet mode
+VERSION=v3.4.8
+TVDLDAP_VERBOSE=${TVDLDAP_VERBOSE:-"FALSE"}                     # enable verbose mode
+TVDLDAP_DEBUG=${TVDLDAP_DEBUG:-"FALSE"}                         # enable debug mode
+TVDLDAP_QUIET=${TVDLDAP_QUIET:-"FALSE"}                         # enable quiet mode
 TVDLDAP_SCRIPT_NAME=$(basename ${BASH_SOURCE[0]})
 TVDLDAP_BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TVDLDAP_LOG_DIR="$(dirname ${TVDLDAP_BIN_DIR})/log"
@@ -40,16 +39,15 @@ TVDLDAP_LOG_DIR="$(dirname ${TVDLDAP_BIN_DIR})/log"
 LOG_BASE=${LOG_BASE:-"${TVDLDAP_LOG_DIR}"} # Use script log directory as default logbase
 TIMESTAMP=$(date "+%Y.%m.%d_%H%M%S")
 readonly LOGFILE="$LOG_BASE/$(basename $TVDLDAP_SCRIPT_NAME .sh)_$TIMESTAMP.log"
-
-# define tempfile for ldapsearch
+# define tempfile for the script
 TEMPFILE="$LOG_BASE/$(basename $TVDLDAP_SCRIPT_NAME .sh)_$$.ldif"
-# - EOF Environment Variables -----------------------------------------------
+# - EOF Environment Variables --------------------------------------------------
 
-# - Functions ---------------------------------------------------------------
-# ---------------------------------------------------------------------------
+# - Functions ------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Function...: Usage
 # Purpose....: Display Usage and exit script
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 function Usage() {
     
     # define default values for function arguments
@@ -61,7 +59,7 @@ function Usage() {
 
   where:
     services	        Comma separated list of Oracle Net Service Names to search
-        
+
   Common Options:
     -m                  Usage this message
     -v                  Enable verbose mode (default \$TVDLDAP_VERBOSE=${TVDLDAP_VERBOSE})
@@ -96,11 +94,7 @@ function Usage() {
     LDAP hostname TVDLDAP_LDAPHOST, etc. The configuration files are loaded in
     the following order:
 
-    1.  ${TVDLDAP_ETC_DIR}/${TOOL_BASE_NAME}.conf
-    2.  ${TVDLDAP_ETC_DIR}/${TOOL_BASE_NAME}_custom.conf
-    3.  ${ETC_BASE}/${TOOL_BASE_NAME}.conf
-    4.  ${ETC_BASE}/${TOOL_BASE_NAME}_custom.conf
-    5.  Command line parameter
+$((get_list_of_config && echo "Command line parameter")|cat -b)
 
   Logfile : ${LOGFILE}
 
@@ -108,9 +102,9 @@ EOI
     dump_runtime_config     # dump current tool specific environment in debug mode
     clean_quit ${error} ${error_value}
 }
-# - EOF Functions -----------------------------------------------------------
+# - EOF Functions --------------------------------------------------------------
 
-# - Initialization ----------------------------------------------------------
+# - Initialization -------------------------------------------------------------
 touch $LOGFILE 2>/dev/null          # initialize logfile
 exec &> >(tee -a "$LOGFILE")        # Open standard out at `$LOG_FILE` for write.  
 exec 2>&1  
@@ -124,9 +118,13 @@ else
     exit 5
 fi
 
+# define signal handling
+trap on_term TERM SEGV      # handle TERM SEGV using function on_term
+trap on_int INT             # handle INT using function on_int
+source_env                  # source oudbase or base environment if it does exists
 load_config                 # load configur26ation files. File list in TVDLDAP_CONFIG_FILES
 
-# initialize tempfile for ldapsearch output
+# initialize tempfile for the script
 touch $TEMPFILE 2>/dev/null || clean_quit 25 $TEMPFILE
 
 # get options
@@ -166,11 +164,17 @@ export NETSERVICE=${NETSERVICE:-""}
 
 # check for Service and Arguments
 if [ -z "$NETSERVICE" ] && [ $# -ne 0 ]; then
+    echo_debug "DEBUG: Process default NETSERVICE"
     if [[ "$1" =~ ^-.*  ]]; then
-        NETSERVICE=$ORACLE_SID  # default service to ORACLE_SID if Argument starting with dash 
+        echo_debug "DEBUG: Set NETSERVICE to ALL"
+        NETSERVICE="ALL"          # default service to * if Argument starting with dash 
     else
-        NETSERVICE=$1           # default service to Argument if not starting with dash
+        echo_debug "DEBUG: Set NETSERVICE to $1"
+        NETSERVICE=$1             # default service to Argument if not starting with dash
     fi
+else
+    echo_debug "DEBUG: Set NETSERVICE to ALL"
+    NETSERVICE=${NETSERVICE:-"ALL"}
 fi
 
 # check for mandatory parameters
@@ -185,23 +189,25 @@ ask_bindpwd                         # ask for the bind password if TVDLDAP_BINDD
                                     # is TRUE and LDAP tools are not OpenLDAP
 current_binddn=$(get_binddn_param "$TVDLDAP_BINDDN" )
 current_bindpwd=$(get_bindpwd_param "$TVDLDAP_BINDDN_PWD" ${TVDLDAP_BINDDN_PWDASK} "$TVDLDAP_BINDDN_PWDFILE")
-if [ -n "$current_binddn" ] && [ -z "${current_bindpwd}" ]; then clean_quit 4; fi
+if [ -z "$current_binddn" ] && [ -z "${current_bindpwd}" ]; then clean_quit 4; fi
 
 # get base DN information
 BASEDN_LIST=$(get_basedn "$TVDLDAP_BASEDN")
-# - EOF Initialization -------------------------------------------------------
+# - EOF Initialization ----------------------------------------------------------
  
-# - Main ---------------------------------------------------------------------
+# - Main ------------------------------------------------------------------------
 echo_debug "DEBUG: Configuration / Variables:"
+echo_debug "---------------------------------------------------------------------------------"
 echo_debug "DEBUG: LDAP Host............... = $TVDLDAP_LDAPHOST"
 echo_debug "DEBUG: LDAP Port............... = $TVDLDAP_LDAPPORT"
 echo_debug "DEBUG: Bind DN................. = $TVDLDAP_BINDDN"
-echo_debug "DEBUG: Bind PWD................ = $TVDLDAP_BINDDN_PWD"
+echo_debug "DEBUG: Bind PWD................ = $(echo_secret $TVDLDAP_BINDDN_PWD)"
 echo_debug "DEBUG: Bind PWD File........... = $TVDLDAP_BINDDN_PWDFILE"
-echo_debug "DEBUG: Bind parameter.......... = $current_binddn $current_bindpwd"
+echo_debug "DEBUG: Bind parameter.......... = $current_binddn $(echo_secret $current_bindpwd)"
 echo_debug "DEBUG: Base DN................. = $BASEDN_LIST"
 echo_debug "DEBUG: Net Service Names....... = $NETSERVICE"
 echo_debug "DEBUG: ldapsearch options...... = $ldapsearch_options"
+echo_debug "DEBUG: "
 
 for service in $(echo $NETSERVICE | tr "," "\n"); do  # loop over service
     echo_debug "DEBUG: process service $service"
@@ -214,7 +220,7 @@ for service in $(echo $NETSERVICE | tr "," "\n"); do  # loop over service
     else 
         BASEDN_LIST=$(get_basedn "$TVDLDAP_BASEDN")
     fi
-    
+
     echo_debug "DEBUG: current Base DN list........ = $BASEDN_LIST"
     echo_debug "DEBUG: current Net Service Names... = $current_cn"
     for basedn in ${BASEDN_LIST}; do                # loop over base DN
@@ -237,26 +243,26 @@ for service in $(echo $NETSERVICE | tr "," "\n"); do  # loop over service
                 # loop over ldapsearch results
                 for result in $(grep -iv '^dn: ' $TEMPFILE | sed -n '1 {h; $ !d}; $ {x; s/\n //g; p}; /^ / {H; d}; /^ /! {x; s/\n //g; p}'| sed 's/$/;/g' | sed 's/^;$/DELIM/g' | tr -d '\n'| sed 's/DELIM/\n/g'|tr -d ' '); do
                     echo_debug "DEBUG: ${result}"
-                    cn=$(echo ${result}| cut -d ';' -f 1 | cut -d " " -f 2 | sed 's/cn://gi')
+                    cn=$(echo ${result}|sed 's/;*$//g'|sed 's/.*cn:\(.*\)\(;.*\|$\)/\1/')
                     # check for aliasedObjectName or orclNetDescString
                     if [[ "$result" == *orclNetDescString* ]]; then
-                        NetDescString=$(echo ${result}| cut -d ';' -f 2 | cut -d " " -f2- |sed 's/orclNetDescString://gi')
+                        NetDescString=$(echo ${result}|sed 's/;*$//g'|sed 's/.*orclNetDescString:\(.*\)\(;.*\|$\)/\1/')
                         echo "${cn}.${domain}=${NetDescString}"
                     elif [[ "$result" == *aliasedObjectName* ]]; then
-                        aliasedObjectName=$(echo ${result}| cut -d ';' -f 2 | cut -d " " -f2- |sed 's/aliasedObjectName://gi')
+                        aliasedObjectName=$(echo ${result}|sed 's/;*$//g'|sed 's/.*aliasedObjectName:\(.*\)\(;.*\|$\)/\1/')
                         echo "${cn}.${domain} alias to ${aliasedObjectName}"
                     fi
                 done
             else
-                echo "WARN : Net Service Name / Alias ${current_cn} not found in ${basedn}"
+                printf $TNS_INFO'\n' "WARN : Net Service Name / Alias ${current_cn} not found in ${basedn}"
             fi
             echo ""
         else
-            echo "WARN : Base DN ${basedn} not found"
+            printf $TNS_INFO'\n' "WARN : Base DN ${basedn} not found"
         fi
     done
 done
 
 rotate_logfiles                     # purge log files based on TVDLDAP_KEEP_LOG_DAYS
 clean_quit                          # clean exit with return code 0
-# --- EOF --------------------------------------------------------------------
+# --- EOF ----------------------------------------------------------------------
