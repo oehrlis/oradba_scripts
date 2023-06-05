@@ -2177,19 +2177,14 @@ select * from
 				<TYPE><![CDATA[horizontal]]></TYPE>
 			</CustomValues>
 			<query>
-				<sql><![CDATA[SELECT "POLICY_NAME", "ACTIVE", "AUDIT_CONDITION", "CONDITION_EVAL_OPT", "COMMON", "INHERITED", "AUDIT_ONLY_TOPLEVEL", "ORACLE_SUPPLIED" FROM(
-SELECT
-    u.policy_name,
-    nvl((
-        SELECT
-            'YES'
-        FROM
-            audit_unified_enabled_policies a
-        WHERE
-            a.policy_name = u.policy_name
-        GROUP BY
-            a.policy_name
-    ), 'NO') active,
+				<sql><![CDATA[SELECT
+    nvl(u.policy_name, a.policy_name)                 AS policy_name,
+    decode(a.policy_name, u.policy_name, 'YES', 'NO') AS active,
+    a.enabled_option,
+    a.entity_name,
+    a.entity_type,
+    a.success,
+    a.failure,
     u.audit_condition,
     u.condition_eval_opt,
     u.common,
@@ -2197,9 +2192,16 @@ SELECT
     u.audit_only_toplevel,
     u.oracle_supplied
 FROM
-    audit_unified_policies u
+    audit_unified_policies         u
+    FULL JOIN audit_unified_enabled_policies a ON u.policy_name = a.policy_name
 GROUP BY
     u.policy_name,
+    a.policy_name,
+    a.enabled_option,
+    a.entity_name,
+    a.entity_type,
+    a.success,
+    a.failure,
     u.audit_condition,
     u.condition_eval_opt,
     u.common,
@@ -2207,8 +2209,10 @@ GROUP BY
     u.audit_only_toplevel,
     u.oracle_supplied
 ORDER BY
-    u.policy_name
-)]]></sql>
+    u.policy_name,
+    active,
+    a.enabled_option,
+    a.entity_name]]></sql>
 			</query>
 			<display id="null" type="" style="Code" enable="true">
 				<name><![CDATA[Comment]]></name>
@@ -2239,6 +2243,14 @@ ORDER BY
 				</CustomValues>
 				<query>
 					<sql><![CDATA[SELECT * FROM audit_unified_policies WHERE policy_name=:POLICY_NAME]]></sql>
+					<binds>
+						<bind id="POLICY_NAME">
+							<prompt><![CDATA[POLICY_NAME]]></prompt>
+							<tooltip><![CDATA[POLICY_NAME]]></tooltip>
+							<value><![CDATA[NULL_VALUE]]></value>
+							<bracket><![CDATA[null]]></bracket>
+						</bind>
+					</binds>
 				</query>
 			</display>
 			<display id="null" type="" style="Code" enable="true">
@@ -2376,14 +2388,6 @@ WHERE
     policy_name = :POLICY_NAME
 GROUP BY 
     policy_name]]></sql>
-					<binds>
-						<bind id="POLICY_NAME">
-							<prompt><![CDATA[POLICY_NAME]]></prompt>
-							<tooltip><![CDATA[POLICY_NAME]]></tooltip>
-							<value><![CDATA[NULL_VALUE]]></value>
-							<bracket><![CDATA[null]]></bracket>
-						</bind>
-					</binds>
 				</query>
 			</display>
 			<display id="null" type="" style="Table" enable="true">
