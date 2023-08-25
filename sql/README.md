@@ -60,9 +60,9 @@ thus to be able to sort them better.
 
 The following SQL scripts are available.
 
-| Script      | Alias   | Purpose                                      |
-|-------------|---------|----------------------------------------------|
-| ssa_hip.sql | hip.sql | Show all (hidden and regular) init parameter |
+| Script                     | Alias              | Purpose                                      |
+|----------------------------|--------------------|----------------------------------------------|
+| [ssa_hip.sql](ssa_hip.sql) | [hip.sql](hip.sql) | Show all (hidden and regular) init parameter |
 
 ## Oracle Unified Audit
 
@@ -70,42 +70,42 @@ The following SQL scripts are available.
 
 The following SQL scripts are available.
 
-| Script                               | Purpose                                                                                              |
-|--------------------------------------|------------------------------------------------------------------------------------------------------|
-| saua_info.sql                        | Show information about the audit trails                                                              |
-| daua_pol.sql                         | Disable all audit policies and drop all non-Oracle maintained policies                               |
-| cdua_init.sql                        | Initialize Audit environment (create tablespace, reorganize tables, create jobs)                     |
-| caua_pol.sql                         | Create custom local audit policies policies                                                          |
-| iaua_pol.sql                         | Enable custom local audit policies policies                                                          |
-| saua_pol.sql                         | Show local audit policies policies                                                                   |
-| saua_teact.sql                       | Show top unified audit events by action for current DBID                                             |
-| saua_tecli.sql                       | Show top unified audit events by client_program_name for current DBID                                |
-| saua_tedbid.sql                      | Show top unified audit events by DBID                                                                |
-| saua_teusr.sql                       | Show top unified audit events by dbusername for current DBID                                         |
-| saua_teobj.sql                       | Show top unified audit events by object_name for current DBID                                        |
-| saua_teobjusr.sql                    | Show top unified audit events by Object Name without Oracle maintained schemas for current DBID      |
-| saua_teown.sql                       | Show top unified audit events by object_schema for current DBID                                      |
-| saua_teosusr.sql                     | Show top unified audit events by os_username for current DBID                                        |
-| saua_tepol.sql                       | Show top unified audit events by unified_audit_policies for current DBID                             |
-| saua_tepoldet.sql                    | Show top unified audit events by unified_audit_policies, dbusername, action for current DBID         |
-| saua_tehost.sql                      | Show top unified audit events by userhost for current DBID                                           |
-| saua_asdbv.sql                       | Show audit sessions for audit type Database Vault                                                    |
-| saua_asdp.sql                        | Show audit sessions for audit type Datapump                                                          |
-| saua_asfga.sql                       | Show audit sessions for audit type Fine Grained Audit                                                |
-| saua_asbck.sql                       | Show audit sessions for audit type RMAN                                                              |
-| saua_asstd.sql                       | Show audit sessions for audit type Standard                                                          |
-| saua_as.sql                          | Show audit sessions for audit any type                                                               |
-| saua_asdet.sql                       | Show entries of a particular audit session with unified_audit_policies                               |
-| saua_asdetsql.sql                    | Show entries of a particular audit session with SQL_TEXT                                             |
-| sdua_usage.sql                       | Show Unified Audit trail storage usage                                                               |
-| saua_tabsize.sql                     | Show Unified Audit trail table and partition size                                                    |
-| sdua_enpolstm.sql                    | Generate statements to enable all audit policies as currently set in AUDIT_UNIFIED_ENABLED_POLICIES  |
-| sdua_crpolstm.sql                    | Generate statements to create all audit policies as currently set in AUDIT_UNIFIED_ENABLED_POLICIES  |
-| sdua_drpolstm.sql                    | Generate statements to drop all audit policies as currently set in AUDIT_UNIFIED_ENABLED_POLICIES    |
-| sdua_dipolstm.sql                    | Generate statements to disable all audit policies as currently set in AUDIT_UNIFIED_ENABLED_POLICIES |
-| sdua_prgstm.sql                      | Generate Unified Audit trail storage purge statements                                                |
-| sdua_stostm.sql                      | Generate Unified Audit trail storage usage modification statements                                   |
-| cdsec_credbarestrole.sql             | Script to create a restricted DBA role including re-grant to existing users.                         |
+| Script                                               | Purpose                                                                                              |
+|------------------------------------------------------|------------------------------------------------------------------------------------------------------|
+| [saua_info.sql](saua_info.sql)                       | Show information about the audit trails                                                              |
+| [daua_pol.sql](daua_pol.sql)                         | Disable all audit policies and drop all non-Oracle maintained policies                               |
+| [cdua_init.sql](cdua_init.sql)                       | Initialize Audit environment (create tablespace, reorganize tables, create jobs)                     |
+| [caua_pol.sql](caua_pol.sql)                         | Create custom local audit policies policies                                                          |
+| [iaua_pol.sql](iaua_pol.sql)                         | Enable custom local audit policies policies                                                          |
+| [saua_pol.sql](saua_pol.sql)                         | Show local audit policies policies                                                                   |
+| [saua_teact.sql](saua_teact.sql)                     | Show top unified audit events by action for current DBID                                             |
+| [saua_tecli.sql](saua_tecli.sql)                     | Show top unified audit events by client_program_name for current DBID                                |
+| [saua_tedbid.sql](saua_tedbid.sql)                   | Show top unified audit events by DBID                                                                |
+| [saua_teusr.sql](saua_teusr.sql)                     | Show top unified audit events by dbusername for current DBID                                         |
+| [saua_teobj.sql](saua_teobj.sql)                     | Show top unified audit events by object_name for current DBID                                        |
+| [saua_teobjusr.sql](saua_teobjusr.sql)               | Show top unified audit events by Object Name without Oracle maintained schemas for current DBID      |
+| [saua_teown.sql](saua_teown.sql)                     | Show top unified audit events by object_schema for current DBID                                      |
+| [saua_teosusr.sql](saua_teosusr.sql)                 | Show top unified audit events by os_username for current DBID                                        |
+| [saua_tepol.sql](saua_tepol.sql)                     | Show top unified audit events by unified_audit_policies for current DBID                             |
+| [saua_tepoldet.sql](saua_tepoldet.sql)               | Show top unified audit events by unified_audit_policies, dbusername, action for current DBID         |
+| [saua_tehost.sql](saua_tehost.sql)                   | Show top unified audit events by userhost for current DBID                                           |
+| [saua_asdbv.sql](saua_asdbv.sql)                     | Show audit sessions for audit type Database Vault                                                    |
+| [saua_asdp.sql](saua_asdp.sql)                       | Show audit sessions for audit type Datapump                                                          |
+| [saua_asfga.sql](saua_asfga.sql)                     | Show audit sessions for audit type Fine Grained Audit                                                |
+| [saua_asbck.sql](saua_asbck.sql)                     | Show audit sessions for audit type RMAN                                                              |
+| [saua_asstd.sql](saua_asstd.sql)                     | Show audit sessions for audit type Standard                                                          |
+| [saua_as.sql](saua_as.sql)                           | Show audit sessions for audit any type                                                               |
+| [saua_asdet.sql](saua_asdet.sql)                     | Show entries of a particular audit session with unified_audit_policies                               |
+| [saua_asdetsql.sql](saua_asdetsql.sql)               | Show entries of a particular audit session with SQL_TEXT                                             |
+| [sdua_usage.sql](sdua_usage.sql)                     | Show Unified Audit trail storage usage                                                               |
+| [saua_tabsize.sql](saua_tabsize.sql)                 | Show Unified Audit trail table and partition size                                                    |
+| [sdua_enpolstm.sql](sdua_enpolstm.sql)               | Generate statements to enable all audit policies as currently set in AUDIT_UNIFIED_ENABLED_POLICIES  |
+| [sdua_crpolstm.sql](sdua_crpolstm.sql)               | Generate statements to create all audit policies as currently set in AUDIT_UNIFIED_ENABLED_POLICIES  |
+| [sdua_drpolstm.sql](sdua_drpolstm.sql)               | Generate statements to drop all audit policies as currently set in AUDIT_UNIFIED_ENABLED_POLICIES    |
+| [sdua_dipolstm.sql](sdua_dipolstm.sql)               | Generate statements to disable all audit policies as currently set in AUDIT_UNIFIED_ENABLED_POLICIES |
+| [sdua_prgstm.sql](sdua_prgstm.sql)                   | Generate Unified Audit trail storage purge statements                                                |
+| [sdua_stostm.sql](sdua_stostm.sql)                   | Generate Unified Audit trail storage usage modification statements                                   |
+| [cdsec_credbarestrole.sql](cdsec_credbarestrole.sql) | Script to create a restricted DBA role including re-grant to existing users.                         |
 
 ### SQL Developer Reports
 
