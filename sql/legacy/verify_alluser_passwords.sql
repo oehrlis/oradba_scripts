@@ -1,0 +1,21 @@
+--------------------------------------------------------------------------------
+--  OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+--------------------------------------------------------------------------------
+--  Name......: verify_alluser_passwords.sql
+--  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
+--  Editor....: Stefan Oehrli
+--  Date......: 2018.12.11
+--  Revision..:  
+--  Purpose...: Wrapper script to check if any user in sys.user$  
+--              has a weak password. Passwords will be displayed
+--  Usage.....:  @verify_alluser_passwords
+--  Notes.....: 
+--  Reference.: verify_passwords.sql has to be in the SQLPATH
+--  License...: Apache License Version 2.0, January 2004 as shown
+--              at http://www.apache.org/licenses/
+----------------------------------------------------------------------------
+--  Modified..:
+--  see git revision history for more information on changes/updates
+----------------------------------------------------------------------------
+@verify_passwords.sql TRUE % 60
+-- EOF ---------------------------------------------------------------------

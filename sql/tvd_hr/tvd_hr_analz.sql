@@ -11,11 +11,8 @@
 --              choose the best physical access strategy. Results can be viewed 
 --              in columns of DBA_TABLES, DBA_TAB_COLUMNS and such
 --  Reference.: SYS (or grant manually to a DBA)
---  License...: Licensed under the Universal Permissive License v 1.0 as 
---              shown at http://oss.oracle.com/licenses/upl.
---------------------------------------------------------------------------------
---  Modified..:
---  see git revision history for more information on changes/updates
+--  License...: Apache License Version 2.0, January 2004 as shown
+--              at http://www.apache.org/licenses/
 --------------------------------------------------------------------------------
 SET FEEDBACK 1
 SET NUMWIDTH 10
