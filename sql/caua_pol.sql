@@ -24,73 +24,73 @@ SPOOL caua_audpol.log
 SHOW con_name
 --------------------------------------------------------------------------------
 -- Create audit policy to audit all action for privileged users
-CREATE AUDIT POLICY lodh_loc_all_act_priv_usr
+CREATE AUDIT POLICY od_loc_all_act_priv_usr
     ACTIONS ALL
     ONLY TOPLEVEL;
 
-COMMENT ON AUDIT POLICY lodh_loc_all_act_priv_usr IS
-    'Lombard Odier local audit policy to audit all actions by priviledged users';
+COMMENT ON AUDIT POLICY od_loc_all_act_priv_usr IS
+    'OraDBA local audit policy to audit all actions by priviledged users';
 
 --------------------------------------------------------------------------------
 -- Create audit policy to audit all action by users with direct access
-CREATE AUDIT POLICY lodh_loc_all_act_direct_acc
+CREATE AUDIT POLICY od_loc_all_act_direct_acc
     ACTIONS ALL
     WHEN '(sys_context(''userenv'',''ip_address'') IS NULL)' EVALUATE PER SESSION
     ONLY TOPLEVEL;
 
-COMMENT ON AUDIT POLICY lodh_loc_all_act_direct_acc IS
-    'Lombard Odier local audit policy to audit all actions through direct access';
+COMMENT ON AUDIT POLICY od_loc_all_act_direct_acc IS
+    'OraDBA local audit policy to audit all actions through direct access';
 
 --------------------------------------------------------------------------------
 -- Create audit policy to audit all action by users with direct access
-CREATE AUDIT POLICY lodh_loc_all_act_proxy_usr
+CREATE AUDIT POLICY od_loc_all_act_proxy_usr
 ACTIONS ALL
     WHEN '(sys_context(''userenv'',''proxy_user'') IS NOT NULL)'
     EVALUATE PER SESSION
     ONLY TOPLEVEL;
 
-COMMENT ON AUDIT POLICY lodh_loc_all_act_proxy_usr IS
-    'Lombard Odier local audit policy to audit all actions of proxy user access';
+COMMENT ON AUDIT POLICY od_loc_all_act_proxy_usr IS
+    'OraDBA local audit policy to audit all actions of proxy user access';
 
 --------------------------------------------------------------------------------
 -- Create audit policy to audit all action by users with direct access
-CREATE AUDIT POLICY lodh_loc_all_act_named_usr
+CREATE AUDIT POLICY od_loc_all_act_named_usr
     ACTIONS ALL
     ONLY TOPLEVEL;
 
-COMMENT ON AUDIT POLICY lodh_loc_all_act_named_usr IS
-    'Lombard Odier local audit policy to audit all actions of specific named users';
+COMMENT ON AUDIT POLICY od_loc_all_act_named_usr IS
+    'OraDBA local audit policy to audit all actions of specific named users';
 
 --------------------------------------------------------------------------------
 -- Create audit policy to audit all logon events
-CREATE AUDIT POLICY lodh_loc_all_logon_events
+CREATE AUDIT POLICY od_loc_all_logon_events
     ACTIONS
     LOGON,
     LOGOFF;
 
-COMMENT ON AUDIT POLICY lodh_loc_all_logon_events IS
-    'Lombard Odier local audit policy to audit all logon events';
+COMMENT ON AUDIT POLICY od_loc_all_logon_events IS
+    'OraDBA local audit policy to audit all logon events';
 
 --------------------------------------------------------------------------------
 -- Create audit policy to audit all datapump events
-CREATE AUDIT POLICY lodh_loc_all_dp_events
+CREATE AUDIT POLICY od_loc_all_dp_events
     ACTIONS COMPONENT = datapump export, import;
 
-COMMENT ON AUDIT POLICY lodh_loc_all_dp_events IS
-    'Lombard Odier local audit policy to audit all datapump events';
+COMMENT ON AUDIT POLICY od_loc_all_dp_events IS
+    'OraDBA local audit policy to audit all datapump events';
 
 --------------------------------------------------------------------------------
 -- Create audit policy to audit all directory access events
-CREATE AUDIT POLICY lodh_loc_dir_acc
+CREATE AUDIT POLICY od_loc_dir_acc
     ACTIONS READ DIRECTORY, WRITE DIRECTORY, EXECUTE DIRECTORY
     ONLY TOPLEVEL;
 
-COMMENT ON AUDIT POLICY lodh_loc_dir_acc IS
-    'Lombard Odier local audit policy to audit all directory access events';
+COMMENT ON AUDIT POLICY od_loc_dir_acc IS
+    'OraDBA local audit policy to audit all directory access events';
 
 --------------------------------------------------------------------------------
 -- Create audit policy to audit account management actions
-CREATE AUDIT POLICY lodh_loc_acc_mgmt
+CREATE AUDIT POLICY od_loc_acc_mgmt
     ACTIONS
         CREATE ROLE, ALTER ROLE, DROP ROLE,
         CREATE USER, ALTER USER, DROP USER,
@@ -99,24 +99,24 @@ CREATE AUDIT POLICY lodh_loc_acc_mgmt
         REVOKE,
         SET ROLE;
 
-COMMENT ON AUDIT POLICY lodh_loc_acc_mgmt IS
-    'Lombard Odier local audit policy to audit account management actions';
+COMMENT ON AUDIT POLICY od_loc_acc_mgmt IS
+    'OraDBA local audit policy to audit account management actions';
 
 --------------------------------------------------------------------------------
 -- Create audit policy to audit instance configuration
-CREATE AUDIT POLICY lodh_loc_inst_config
+CREATE AUDIT POLICY od_loc_inst_config
     ACTIONS
         ALTER DATABASE,
         ALTER SYSTEM,
         CREATE PFILE,
         CREATE SPFILE;
 
-COMMENT ON AUDIT POLICY lodh_loc_inst_config IS
-    'Lombard Odier local audit policy to audit instance configuration';
+COMMENT ON AUDIT POLICY od_loc_inst_config IS
+    'OraDBA local audit policy to audit instance configuration';
 
 --------------------------------------------------------------------------------
 -- Create audit policy to audit secure configuration
-CREATE AUDIT POLICY lodh_loc_secure_config
+CREATE AUDIT POLICY od_loc_secure_config
     PRIVILEGES
         AUDIT SYSTEM,
         AUDIT ANY
@@ -129,12 +129,12 @@ CREATE AUDIT POLICY lodh_loc_secure_config
         ADMINISTER KEY MANAGEMENT,
         ALL ON AUDSYS.DBMS_AUDIT_MGMT;
 
-COMMENT ON AUDIT POLICY lodh_loc_secure_config IS
-    'Lombard Odier local audit policy to audit secure configuration';
+COMMENT ON AUDIT POLICY od_loc_secure_config IS
+    'OraDBA local audit policy to audit secure configuration';
 
 --------------------------------------------------------------------------------
 -- Create audit policy to audit all critical database activity
-CREATE AUDIT POLICY lodh_loc_critical_db_act
+CREATE AUDIT POLICY od_loc_critical_db_act
     PRIVILEGES
         ADMINISTER DATABASE TRIGGER,
         ADMINISTER KEY MANAGEMENT,
@@ -159,12 +159,12 @@ CREATE AUDIT POLICY lodh_loc_critical_db_act
         REVOKE,
         SET ROLE;
 
-COMMENT ON AUDIT POLICY lodh_loc_critical_db_act IS
-    'Lombard Odier audit policy to audit all critical database activity';
+COMMENT ON AUDIT POLICY od_loc_critical_db_act IS
+    'OraDBA audit policy to audit all critical database activity';
 
 --------------------------------------------------------------------------------
 -- Create audit policy to audit all database schema changes
-CREATE AUDIT POLICY lodh_loc_db_schema_changes
+CREATE AUDIT POLICY od_loc_db_schema_changes
     PRIVILEGES
         CREATE EXTERNAL JOB,
         CREATE JOB,
@@ -199,8 +199,8 @@ CREATE AUDIT POLICY lodh_loc_db_schema_changes
         CREATE VIEW, ALTER VIEW,
         DROP VIEW;
 
-COMMENT ON AUDIT POLICY lodh_loc_db_schema_changes IS
-    'Lombard Odier local audit policy to audit database schema changes';
+COMMENT ON AUDIT POLICY od_loc_db_schema_changes IS
+    'OraDBA local audit policy to audit database schema changes';
 
 -- List enabled audit policies
 SELECT * FROM audit_unified_enabled_policies;

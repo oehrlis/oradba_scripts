@@ -29,21 +29,21 @@ SPOOL iaua_audpol.log
 -- AUDIT POLICY ora_cis_recommendations;
 
 -- enable SecBench specific audit policies
-AUDIT POLICY lodh_loc_all_logon_events;
-AUDIT POLICY lodh_loc_all_act_priv_usr BY SYS, SYSKM, SYSRAC, PUBLIC;
-AUDIT POLICY lodh_loc_all_act_priv_usr BY USERS WITH GRANTED ROLES dba,datapump_exp_full_database, imp_full_database, exp_full_database, datapump_imp_full_database;
-AUDIT POLICY lodh_loc_all_act_proxy_usr;
-AUDIT POLICY lodh_loc_all_act_direct_acc;
--- AUDIT POLICY lodh_loc_all_act_direct_acc_stm;
--- AUDIT POLICY lodh_loc_all_act_named_usr;
-AUDIT POLICY lodh_loc_all_act_named_usr BY soe;
-AUDIT POLICY lodh_loc_all_dp_events;
-AUDIT POLICY lodh_loc_dir_acc;
-AUDIT POLICY lodh_loc_acc_mgmt;
-AUDIT POLICY lodh_loc_critical_db_act;
-AUDIT POLICY lodh_loc_db_schema_changes;
-AUDIT POLICY lodh_loc_inst_config;
-AUDIT POLICY lodh_loc_secure_config;
+AUDIT POLICY od_loc_all_logon_events;
+AUDIT POLICY od_loc_all_act_priv_usr BY SYS, SYSKM, SYSRAC, PUBLIC;
+AUDIT POLICY od_loc_all_act_priv_usr BY USERS WITH GRANTED ROLES dba,datapump_exp_full_database, imp_full_database, exp_full_database, datapump_imp_full_database;
+AUDIT POLICY od_loc_all_act_proxy_usr;
+AUDIT POLICY od_loc_all_act_direct_acc;
+-- AUDIT POLICY od_loc_all_act_direct_acc_stm;
+-- AUDIT POLICY od_loc_all_act_named_usr;
+AUDIT POLICY od_loc_all_act_named_usr BY soe;
+AUDIT POLICY od_loc_all_dp_events;
+AUDIT POLICY od_loc_dir_acc;
+AUDIT POLICY od_loc_acc_mgmt;
+AUDIT POLICY od_loc_critical_db_act;
+AUDIT POLICY od_loc_db_schema_changes;
+AUDIT POLICY od_loc_inst_config;
+AUDIT POLICY od_loc_secure_config;
 
 -- List enabled audit policies
 SELECT * FROM audit_unified_enabled_policies;
