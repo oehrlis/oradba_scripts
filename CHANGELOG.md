@@ -16,6 +16,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+
+## [1.0.0] - 2023-08-29
+
+### Added
+
+- Readme for SQL Toolbox for simplified Oracle Unified Audit Data Analysis
+- add latest version (v3.4.8) of TNS scripts
+
+### Changed
+
+- Adjust script names according naming convention
+- Clean up file headers
+
 ## [0.1.1] - 2022-05-31
 
 ### Fixed
