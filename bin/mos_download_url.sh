@@ -16,8 +16,8 @@
 # ------------------------------------------------------------------------------
 # - Customization --------------------------------------------------------------
 # - just add/update any kind of customized environment variable here
-MOS_USER=ACCOUNT            # # MOS Account Credentials
-MOS_PASSWORD=PASSWORD
+MOS_USER=$1             # MOS Account Credentials
+MOS_PASSWORD=$2         # MOS Account Credentials
 # - End of Customization -------------------------------------------------------
 
 # - Environment Variables ------------------------------------------------------
