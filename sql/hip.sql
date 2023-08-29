@@ -4,7 +4,7 @@
 --  Name......: hip.sql
 --  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 --  Editor....: Stefan Oehrli
---  Date......: 2018.12.11
+--  Date......: 2023.08.29
 --  Revision..:  
 --  Purpose...: Alias for ssa_hip.sql
 --  Usage.....: n/a
