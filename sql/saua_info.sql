@@ -4,7 +4,7 @@
 --  Name......: saua_info.sql
 --  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 --  Editor....: Stefan Oehrli
---  Date......: 2018.10.24
+--  Date......: 2023.08.29
 --  Revision..:  
 --  Purpose...: Show information about the audit trails 
 --  Notes.....:  
