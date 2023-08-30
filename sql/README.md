@@ -1,5 +1,6 @@
 # OraDBA SQL Tools and Reporting
 <!-- markdownlint-disable MD013 -->
+<!-- markdownlint-disable MD024 -->
 ## General Information
 
 A number of SQL scripts as well as SQL Developer Reports for various DBA
@@ -35,13 +36,13 @@ information or to configure, e.g. create, modify, activate, etc.
 The privilege qualifier is used to determine what privileges are required by a
 script.
 
-| Qualifier | Stands For | Comment                                                                |
-|-----------|------------|------------------------------------------------------------------------|
-| s         | SYS        | SYS, SYSDBA or Internal                                                |
-| d         | DBA        | SYSTEM or any other user with DBA role                                 |
-| o         | Owner      | Object owner                                                           |
-| p         | Create     | Needs some special privileges according to the scripts inline comments |
-| a         | Audit      | Audit roles like AUDIT_ADMIN or AUDIT_VIEWER                           |
+| Qualifier | Stands For | Comment                                                                 |
+|-----------|------------|-------------------------------------------------------------------------|
+| s         | SYS        | SYS, SYSDBA, SYSKM, SYSDG, SYSBACKUP or Internal. Depending on use case |
+| d         | DBA        | SYSTEM or any other user with DBA role                                  |
+| o         | Owner      | Object owner                                                            |
+| p         | Create     | Needs some special privileges according to the scripts inline comments  |
+| a         | Audit      | Audit roles like AUDIT_ADMIN or AUDIT_VIEWER                            |
 
 ### Topic Qualifier
 
@@ -161,3 +162,21 @@ The scripts are divided into the following categories for easier organisation.
 | Top Audit Events    | Top Audit Events by Unified Policy          | Show top unified audit events by Unified Audit Policy                                                                                  |
 | Top Audit Events    | Top Audit Events by SQL Text                | Show top unified audit events by SQL Text                                                                                              |
 | Top Audit Events    | Top Audit Events by User                    | Show top unified audit events by User                                                                                                  |
+
+## Oracle Advanced Security and Encryption
+
+### SQL Script Use Cases and Filenames
+
+The following SQL scripts are available.
+
+| Script                                       | Purpose                                                                                                                                                                                                                                                    |
+|----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [csenc_master.sql](csenc_master.sql)         | Create master encryption key for TDE configured keystore must be set before hand. Works for CDB as well PDB.                                                                                                                                               |
+| [csenc_swkeystore.sql](csenc_swkeystore.sql) | Create TDE software keystore and master encryption key in CDB$ROOT in the WALLET_ROOT directory.                                                                                                                                                           |
+| [ddenc_wroot.sql](ddenc_wroot.sql)           | Reset init.ora parameter WALLET_ROOT for TDE. This script should run in CDB$ROOT. A manual restart of the database is mandatory to activate WALLET_ROOT                                                                                                    |
+| [idenc_lostkey.sql](idenc_lostkey.sql)       | Set hidden parameter *_db_discard_lost_masterkey* to force discard of lost master keys                                                                                                                                                                     |
+| [idenc_tde_pdbiso.sql](idenc_tde_pdbiso.sql) | Initialize TDE in a PDB in isolation mode i.e., with a dedicated wallet in WALLET_ROOT for this pdb. The CDB must be configured for TDE beforehand. This scripts does use several other scripts to enable TDE and it also includes **restart** of the pdb. |
+| [idenc_tde_pdbuni.sql](idenc_tde_pdbuni.sql) | Initialize TDE in a PDB in united mode i.e., with a common wallet of the CDB in WALLET_ROOT. The CDB must be configured for TDE beforehand. This scripts does use several other scripts to enable TDE and it also includes **restart** of the pdb.         |
+| [idenc_tde.sql](idenc_tde.sql)               | Initialize TDE for a single tenant or container database. This scripts does use several other scripts to enable TDE and it also includes **restart** of the database.                                                                                      |
+| [idenc_wroot.sql](idenc_wroot.sql)           | Initialize init.ora parameter WALLET_ROOT for TDE with software keystore. This script should run in CDB$ROOT. A manual restart of the database is mandatory to activate WALLET_ROOT                                                                        |
+| [ssenc_info.sql](ssenc_info.sql)             | Show information about the TDE Configuration                                                                                                                                                                                                               |
