@@ -34,9 +34,5 @@ ADMINISTER KEY MANAGEMENT SET KEY FORCE KEYSTORE IDENTIFIED BY EXTERNAL STORE WI
 PROMPT == Encryption wallet information from v$encryption_wallet ===============
 SELECT * FROM v$encryption_wallet;
 
-PROMPT =============================================================================================
-PROMPT == It is recommended to restart CDB/PDB to check if master encryption is being used properly.
-PROMPT =============================================================================================
-
 SPOOL OFF
 -- EOF -------------------------------------------------------------------------
