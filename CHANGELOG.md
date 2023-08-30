@@ -16,6 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.3.0] - 2023-08-30
+
+### Added
+
+- add script *isenc_tde_pdbiso_prepare.sql* to prepare a PDB environment for isolated mode
+- add script *isenc_tde_pdbiso_syskm.sql* to configure PDB software keystore as SYSKM
+
+### Changed
+
+- update documentation for new scripts
+
 ## [1.2.0] - 2023-08-30
 
 ### Added
