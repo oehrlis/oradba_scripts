@@ -14,7 +14,6 @@
 --              - idenc_wroot.sql       set init.ora parameter for TDE
 --              - restart database
 --              - csenc_swkeystore.sql  create and configure software keystore
---              - restart database
 --              - csenc_master.sql      create master encryption key
 --              - restart database
 --              - ssenc_info.sql        show current TDE configuration
@@ -25,11 +24,19 @@
 --------------------------------------------------------------------------------
 SET FEEDBACK OFF
 SET VERIFY OFF
--- define default values
+-- define default values for wallet password
 COLUMN def_wallet_pwd           NEW_VALUE def_wallet_pwd        NOPRINT
-COLUMN def_wallet_root_base     NEW_VALUE def_wallet_root_base  NOPRINT
 -- generate random password
 SELECT dbms_random.string('X', 20) def_wallet_pwd FROM dual;
+
+-- assign default value for parameter if argument 1 is empty
+COLUMN 1 NEW_VALUE 1 NOPRINT
+SELECT '' "1" FROM dual WHERE ROWNUM = 0;
+DEFINE wallet_pwd           = &1 &def_wallet_pwd
+COLUMN wallet_pwd           NEW_VALUE wallet_pwd NOPRINT
+
+-- define default values for wallet password
+COLUMN def_wallet_root_base     NEW_VALUE def_wallet_root_base  NOPRINT
 -- get the wallet root directory from audit_file_dest
 SELECT
     substr(value, 1, instr(value, '/', - 1, 1) - 1) def_wallet_root_base
@@ -38,19 +45,16 @@ FROM
 WHERE
     name = 'audit_file_dest';
 
--- assign default value for parameter if argument 1 or 2 is empty
-COLUMN 1 NEW_VALUE 1 NOPRINT
+-- assign default value for parameter if argument 2 is empty
 COLUMN 2 NEW_VALUE 2 NOPRINT
-SELECT '' "1" FROM dual WHERE ROWNUM = 0;
 SELECT '' "2" FROM dual WHERE ROWNUM = 0;
-DEFINE wallet_pwd           = &1 &def_wallet_pwd
 DEFINE wallet_root_base     = &2 &def_wallet_root_base
-COLUMN wallet_pwd           NEW_VALUE wallet_pwd NOPRINT
 COLUMN wallet_root_base     NEW_VALUE wallet_root_base NOPRINT
 
 -- format SQLPlus output and behavior
-SET LINESIZE 160 PAGESIZE 200
+SET LINESIZE 180 PAGESIZE 66
 SET HEADING ON
+SET VERIFY ON
 SET FEEDBACK ON
 
 -- start to spool
@@ -64,9 +68,6 @@ STARTUP FORCE;
 
 -- configure software keystore for database / cdb
 @csenc_swkeystore.sql &wallet_pwd
-
-PROMPT == Restart database to load software keystore ===========================
-STARTUP FORCE;
 
 -- uncomment the following line if you have issues with pre-created master
 -- encryption keys. e.g., because TDE wallets have been recreated
