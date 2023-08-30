@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 --  OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
 --------------------------------------------------------------------------------
---  Name......: idenc_tde_pdbuni.sql
+--  Name......: isenc_tde_pdbuni.sql
 --  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 --  Editor....: Stefan Oehrli
 --  Date......: 2023.08.29
@@ -26,7 +26,7 @@ SET HEADING ON
 SET FEEDBACK ON
 
 -- start to spool
-SPOOL idenc_tde_pdbuni.log
+SPOOL isenc_tde_pdbuni.log
 
 -- uncomment the following line if you have issues with pre-created master
 -- encryption keys. e.g., because TDE wallets have been recreated

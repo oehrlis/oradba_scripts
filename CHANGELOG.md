@@ -16,6 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+
+## [1.1.1] - 2023-08-30
+
+### Fixed
+
+- fix name for the files from *idenc_tde.sql*, *idenc_tde_pdbuni.sql*,
+  *idenc_tde_pdbiso.sql* to *isenc_tde.sql*, *isenc_tde_pdbuni.sql*,
+  *isenc_tde_pdbiso.sql*
+
 ## [1.1.0] - 2023-08-30
 
 ### Added
@@ -32,15 +41,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   mandatory to activate WALLET_ROOT
 - add script *idenc_lostkey.sql* to set hidden parameter *_db_discard_lost_masterkey*
   to force discard of lost master keys
-- add script *idenc_tde_pdbiso.sql* to initialize TDE in a PDB in isolation mode
+- add script *isenc_tde_pdbiso.sql* to initialize TDE in a PDB in isolation mode
   i.e., with a dedicated wallet in WALLET_ROOT for this pdb. The CDB must be
   configured for TDE beforehand. This scripts does use several other scripts to
   enable TDE and it also includes **restart** of the pdb.
-- add script *idenc_tde_pdbuni.sql* to initialize TDE in a PDB in united mode
+- add script *isenc_tde_pdbuni.sql* to initialize TDE in a PDB in united mode
   i.e., with a common wallet of the CDB in WALLET_ROOT. The CDB must be
   configured for TDE beforehand. This scripts does use several other scripts to
   enable TDE and it also includes **restart** of the pdb.
-- add script *idenc_tde.sql* to initialize TDE for a single tenant or container
+- add script *isenc_tde.sql* to initialize TDE for a single tenant or container
   database. This scripts does use several other scripts to enable TDE and it
   also includes **restart** of the database.
 - add script *ssenc_info* to show information about the TDE Configuration.
