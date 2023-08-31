@@ -1,13 +1,14 @@
 --------------------------------------------------------------------------------
 --  OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
 --------------------------------------------------------------------------------
---  Name......: isenc_tde_pdbiso_syskm.sql
+--  Name......: isenc_tde_pdbiso_keyadmin.sql
 --  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 --  Editor....: Stefan Oehrli
 --  Date......: 2023.08.29
 --  Revision..:  
 --  Purpose...: Create the software keystore in PDB in isolation mode as SYSKM
---              Environment must be prepared before with isenc_tde_pdbiso_prepare.sql
+--              or PDBADMIN. Environment must be prepared before with
+--              isenc_tde_pdbiso_prepare.sql
 --
 --              The following steps are performed:
 --              - set init.ora parameter
@@ -47,7 +48,7 @@ COLUMN wallet_type      FORMAT A15
 COLUMN con_id           FORMAT 99999
 
 -- start to spool
-SPOOL isenc_tde_pdbiso_syskm.log
+SPOOL isenc_tde_pdbiso_keyadmin.log
 
 PROMPT == Software keystore password ===========================================
 SELECT '&wallet_pwd' "Wallet Password" FROM dual;
