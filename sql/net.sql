@@ -16,10 +16,10 @@
 --  Modified..:
 --  see git revision history for more information on changes/updates
 ----------------------------------------------------------------------------
-COL net_sid HEAD SID FOR 99999
-COL net_osuser HEAD OS_USER FOR a10
-COL net_authentication_type HEAD AUTH_TYPE FOR a10 
-COL net_network_service_banner HEAD NET_BANNER FOR a100
+COLUMN net_sid HEAD "SID" FOR 99999
+COLUMN net_osuser HEAD OS_USER FOR a10
+COLUMN net_authentication_type HEAD AUTH_TYPE FOR a10 
+COLUMN net_network_service_banner HEAD NET_BANNER FOR a100
 
 SELECT 
     sid                    net_sid, 
