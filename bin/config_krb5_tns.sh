@@ -2,7 +2,7 @@
 # ------------------------------------------------------------------------------
 # OraDBA - Oracle Database Infrastructure and Security, 5630 Muri, Switzerland
 # ------------------------------------------------------------------------------
-# Name.......: config_krb_tns.sh
+# Name.......: config_krb5_tns.sh
 # Author.....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 # Editor.....: Stefan Oehrli
 # Date.......: 2023.11.08
@@ -245,7 +245,7 @@ function log_message() {
 
     # Assign the color code based on the level
     case "${level^^}" in
-        INFO)       color=${ORADBA_INFO:-'\033[0;30m'} ;;      # Black for info messages
+        INFO)       color=${ORADBA_INFO :-'\033[0;30m'} ;;      # Black for info messages
         WARN)       color=${ORADBA_WARN:-'\033[0;33m'} ;;      # Yellow for warning messages
         ERROR)      color=${ORADBA_ERROR:-'\033[0;31m'} ;;     # Red for error messages
         SUCCESS)    color=${ORADBA_SUCCESS:-'\033[0;32m'} ;;   # Green for info messages
@@ -454,7 +454,7 @@ ORADBA_KRB5_CONF_FILE=${ORADBA_KRB5_CONF_FILE:-${CLI_KRB5_CONF_FILE:-""}}
 
 # define default value for the KRB5 user name
 if [ -z $ORADBA_KRB5_USER ]; then
-    log_message INFO "INFO: Use hostname $(hostname -s) as kerberos service user"
+    log_message INFO "INFO : Use hostname $(hostname -s) as kerberos service user"
     ORADBA_KRB5_USER=$(hostname -s)
 fi
 
@@ -531,15 +531,15 @@ log_message INFO "INFO : Start configuring -------------------------------------
 log_message INFO "INFO : Update sqlnet.ora --------------------------------------------------"
 # Update sqlnet.ora
 if [ -z "$ORADBA_SQLNET_ORA_FILE" ]; then
-    log_message INFO "INFO: Use embedded sqlnet configuration to update new sqlnet.ora file"
+    log_message INFO "INFO : Use embedded sqlnet configuration to update new sqlnet.ora file"
     if [ -f "$TNS_ADMIN/sqlnet.ora" ]; then
-        log_message INFO "INFO: save existing sqlnet.ora file as sqlnet.ora.${DATE_STAMP}"
+        log_message INFO "INFO : save existing sqlnet.ora file as sqlnet.ora.${DATE_STAMP}"
         cp "$TNS_ADMIN/sqlnet.ora" "$TNS_ADMIN/sqlnet.ora.${DATE_STAMP}"
-        log_message INFO "INFO: remove KRB5 config in sqlnet.ora file"
+        log_message INFO "INFO : remove KRB5 config in sqlnet.ora file"
         sed -i '/AUTHENTICATION/d' $TNS_ADMIN/sqlnet.ora
         sed -i '/KERBEROS5/d' $TNS_ADMIN/sqlnet.ora
 
-        log_message INFO "INFO: update sqlnet.ora file"
+        log_message INFO "INFO : update sqlnet.ora file"
         if [ "${COMMENT^^}" == "TRUE" ]; then
             echo "$SQLNET_ORA_CONTENT"|sed 's/^SQLNET/#&/' >>$TNS_ADMIN/sqlnet.ora
         else
@@ -551,7 +551,7 @@ if [ -z "$ORADBA_SQLNET_ORA_FILE" ]; then
         exit_with_status 22 $TNS_ADMIN/sqlnet.ora
     fi
 elif [ -f "$ORADBA_SQLNET_ORA_FILE" ]; then
-    log_message INFO "INFO: Copy sqlnet.ora from $ORADBA_SQLNET_ORA_FILE"
+    log_message INFO "INFO : Copy sqlnet.ora from $ORADBA_SQLNET_ORA_FILE"
     cp -v $ORADBA_SQLNET_ORA_FILE $TNS_ADMIN/sqlnet.ora
 else
     log_message ERROR "ERR : Can not find / access sqlnet.ora in $ORADBA_SQLNET_ORA_FILE"
@@ -561,16 +561,16 @@ fi
 log_message INFO "INFO : Create krb5.conf  --------------------------------------------------"
 # if exist make a copy of the existing krb5.conf file
 if [ -f "$TNS_ADMIN/krb5.conf" ]; then
-    log_message INFO "INFO: save existing krb5.conf file as krb5.conf.${DATE_STAMP}"
+    log_message INFO "INFO : save existing krb5.conf file as krb5.conf.${DATE_STAMP}"
     cp "$TNS_ADMIN/krb5.conf" "$TNS_ADMIN/krb5.conf.${DATE_STAMP}"
 fi
 
 # create a new krb5.conf
 if [ -z "$ORADBA_KRB5_CONF_FILE" ]; then
-    log_message INFO "INFO: Use embedded krb5.conf to create new krb5.conf file"
+    log_message INFO "INFO : Use embedded krb5.conf to create new krb5.conf file"
     eval "echo \"$KRB5_CONF_CONTENT\"" |awk '/^#/ {print; next} !seen[$0]++' >$TNS_ADMIN/krb5.conf
 elif [ -f "$ORADBA_KRB5_CONF_FILE" ]; then
-    log_message INFO "INFO: Copy krb5.conf from $ORADBA_KRB5_CONF_FILE"
+    log_message INFO "INFO : Copy krb5.conf from $ORADBA_KRB5_CONF_FILE"
     cp -v $ORADBA_KRB5_CONF_FILE $TNS_ADMIN/krb5.conf
 else
     log_message ERROR "ERR : Can not find / access krb5.conf in $ORADBA_KRB5_CONF_FILE"
@@ -579,29 +579,29 @@ fi
 
 log_message INFO "INFO : Get krb5 information -----------------------------------------------"
 
-log_message INFO  "INFO: Create TGT for user ${ORADBA_KRB5_USER}@${ORADBA_KRB5_REALM}"
+log_message INFO  "INFO : Create TGT for user ${ORADBA_KRB5_USER}@${ORADBA_KRB5_REALM}"
 okinit ${ORADBA_KRB5_USER}@${ORADBA_KRB5_REALM} < <(base64 --decode ${ORADBA_KRB5_PASSWORD_FILE}) 2>&1
 KRB5_CACHE=$(oklist 2>/dev/null|grep -i "Ticket cache"|cut -d: -f3) # get KRB5 cache file from oklist
-log_message INFO  "INFO: Get kvno for user ${ORADBA_KRB5_USER}@${ORADBA_KRB5_REALM}"
+log_message INFO  "INFO : Get kvno for user ${ORADBA_KRB5_USER}@${ORADBA_KRB5_REALM}"
 export KRB5_CONFIG="$TNS_ADMIN/krb5.conf"                             # set an alternative krb5.conf file for kvno
 KVNO=$(kvno -c $KRB5_CACHE ${ORADBA_KRB5_USER}@${ORADBA_KRB5_REALM}|cut -d' ' -f4)
 
 log_message INFO "INFO : Create keytab ------------------------------------------------------"
 # if exist make a copy of the existing krb5.conf file
 if [ -f "$TNS_ADMIN/krb5.keytab" ]; then
-    log_message INFO "INFO: save existing krb5.keytab file as krb5.keytab.${DATE_STAMP}"
+    log_message INFO "INFO : save existing krb5.keytab file as krb5.keytab.${DATE_STAMP}"
     mv "$TNS_ADMIN/krb5.keytab" "$TNS_ADMIN/krb5.keytab.${DATE_STAMP}"
 fi
 
 # copy keytab file
 if [ -f "$SCRIPT_BIN_DIR/$ORADBA_KRB5_KEYTAB_FILE" ]; then
-    log_message INFO  "INFO: Copy keytab file from $SCRIPT_BIN_DIR/$ORADBA_KRB5_KEYTAB_FILE"
+    log_message INFO  "INFO : Copy keytab file from $SCRIPT_BIN_DIR/$ORADBA_KRB5_KEYTAB_FILE"
     cp -v "$SCRIPT_BIN_DIR/$ORADBA_KRB5_KEYTAB_FILE" "$TNS_ADMIN/krb5.keytab"
 elif [ -f "$TNS_ADMIN/$ORADBA_KRB5_KEYTAB_FILE" ]; then
-    log_message INFO  "INFO: Copy keytab file from $TNS_ADMIN/$ORADBA_KRB5_KEYTAB_FILE"
+    log_message INFO  "INFO : Copy keytab file from $TNS_ADMIN/$ORADBA_KRB5_KEYTAB_FILE"
     cp -v "$TNS_ADMIN/$ORADBA_KRB5_KEYTAB_FILE" "$TNS_ADMIN/krb5.keytab"
 elif [ -f "$ORADBA_KRB5_KEYTAB_FILE" ]; then
-    log_message INFO  "INFO: Copy keytab file from $ORADBA_KRB5_KEYTAB_FILE"
+    log_message INFO  "INFO : Copy keytab file from $ORADBA_KRB5_KEYTAB_FILE"
     cp -v "$ORADBA_KRB5_KEYTAB_FILE" "$TNS_ADMIN/krb5.keytab"
 fi
 
@@ -614,14 +614,14 @@ wkt $TNS_ADMIN/krb5.keytab
 q
 EOF
 
-log_message INFO  "INFO: List current keytab file"
+log_message INFO  "INFO : List current keytab file"
 oklist -e -k $TNS_ADMIN/krb5.keytab 2>&1
 
-log_message INFO  "INFO: Clean ticket cache using okdstry"
+log_message INFO  "INFO : Clean ticket cache using okdstry"
 okdstry 2>&1
 
 log_message INFO "INFO : --------------------------------------------------------------------"
-log_message INFO "INFO: Kerberos OS configuration finished."
+log_message INFO "INFO : Kerberos OS configuration finished."
 log_message INFO "      it is recommended to restart the listener and databases"
 log_message INFO "      to make sure new SQLNet configuration is used."
 log_message INFO ""

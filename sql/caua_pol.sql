@@ -1,6 +1,5 @@
 --------------------------------------------------------------------------------
--- Trivadis - Part of Accenture, Platform Factory - Data Platforms
--- Saegereistrasse 29, 8152 Glattbrugg, Switzerland
+--  OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
 --------------------------------------------------------------------------------
 -- Name......: caua_pol.sql
 -- Author....: Stefan Oehrli (oes) stefan.oehrli@accenture.com

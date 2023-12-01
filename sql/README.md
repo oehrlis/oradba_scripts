@@ -65,6 +65,21 @@ The following SQL scripts are available.
 |----------------------------|--------------------|----------------------------------------------|
 | [ssa_hip.sql](ssa_hip.sql) | [hip.sql](hip.sql) | Show all (hidden and regular) init parameter |
 
+## Oracle Database Security
+
+### SQL Script Use Cases and Filenames
+
+The following SQL scripts are available.
+
+| Script                                 | Alias                      | Purpose                                                          |
+|----------------------------------------|----------------------------|------------------------------------------------------------------|
+| [sdsec_sysobj.sql](sdsec_sysobj.sql)   | [sysobj.sql](sysobj.sql)   | Show respectively create a list of granted SYS object privileges |
+| [sdsec_syspriv.sql](sdsec_syspriv.sql) | [syspriv.sql](syspriv.sql) | Show respectively create a list of granted system privileges     |
+
+### SQL Developer Reports
+
+not yet available
+
 ## Oracle Unified Audit
 
 ### SQL Script Use Cases and Filenames
@@ -177,12 +192,9 @@ The following SQL scripts are available.
 | [dsenc_tde.sql](dsenc_tde.sql)                               | Remove TDE and software keystore configuration in a single tenant or container database. This scripts does use several other scripts to remove TDE and it also includes restart of the database.                                                                                                         |
 | [idenc_lostkey.sql](idenc_lostkey.sql)                       | Set hidden parameter *_db_discard_lost_masterkey* to force discard of lost master keys                                                                                                                                                                                                                   |
 | [idenc_wroot.sql](idenc_wroot.sql)                           | Initialize init.ora parameter WALLET_ROOT for TDE with software keystore. This script should run in CDB$ROOT. A manual restart of the database is mandatory to activate WALLET_ROOT                                                                                                                      |
-| [isenc_tde_force.sql](isenc_tde_force.sql)                   | Initialize TDE for a single tenant or container database. This scripts does use several other scripts to enable TDE and it also includes restart of the database. It explicitly **discard** lost master key handles.                                                                                     |
-| [isenc_tde_pdbiso_force.sql](isenc_tde_pdbiso_force.sql)     | Initialize TDE in a PDB in isolation mode i.e., with a dedicated wallet in WALLET_ROOT for this pdb. The CDB must be configured for TDE beforehand. This scripts does use several other scripts to enable TDE and it also includes restart of the pdb. It explicitly **discard** lost master key handles |
 | [isenc_tde_pdbiso_prepare.sql](isenc_tde_pdbiso_prepare.sql) | Prepare TDE in a PDB in isolation mode i.e., with a dedicated wallet in WALLET_ROOT for this pdb. Whereby this just prepare the steps as SYSDBA. The software keystore itself will be created by SYSKM                                                                                                   |
 | [isenc_tde_pdbiso_keyadmin.sql](isenc_tde_pdbiso_keyadmin.sql)     | Create the software keystore in PDB in isolation mode as SYSKM Environment must be prepared before with isenc_tde_pdbiso_prepare.sql                                                                                                                                                                     |
 | [isenc_tde_pdbiso.sql](isenc_tde_pdbiso.sql)                 | Initialize TDE in a PDB in isolation mode i.e., with a dedicated wallet in WALLET_ROOT for this pdb. The CDB must be configured for TDE beforehand. This scripts does use several other scripts to enable TDE and it also includes **restart** of the pdb.                                               |
-| [isenc_tde_pdbuni_force.sql](isenc_tde_pdbuni_force.sql)     | Initialize TDE in a PDB in united mode i.e., with a common wallet of the CDB in WALLET_ROOT. The CDB must be configured for TDE beforehand. This scripts does use several other scripts to enable TDE and it also includes restart of the pdb. It explicitly **discard** lost master key handles         |
 | [isenc_tde_pdbuni.sql](isenc_tde_pdbuni.sql)                 | Initialize TDE in a PDB in united mode i.e., with a common wallet of the CDB in WALLET_ROOT. The CDB must be configured for TDE beforehand. This scripts does use several other scripts to enable TDE and it also includes **restart** of the pdb.                                                       |
 | [isenc_tde.sql](isenc_tde.sql)                               | Initialize TDE for a single tenant or container database. This scripts does use several other scripts to enable TDE and it also includes **restart** of the database.                                                                                                                                    |
 | [ssenc_info.sql](ssenc_info.sql)                             | Show information about the TDE Configuration                                                                                                                                                                                                                                                             |

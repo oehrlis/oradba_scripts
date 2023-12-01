@@ -1,0 +1,17 @@
+--------------------------------------------------------------------------------
+--  OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+--------------------------------------------------------------------------------
+--  Name......: sysobj.sql
+--  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
+--  Editor....: Stefan Oehrli
+--  Date......: 2023.11.29
+--  Revision..:  
+--  Purpose...: Alias for sdsec_sysobj.sql
+--  Usage.....: n/a
+--  Notes.....: n/a
+--  Reference.: 
+--  License...: Apache License Version 2.0, January 2004 as shown
+--              at http://www.apache.org/licenses/
+--------------------------------------------------------------------------------
+@sdsec_sysobj.sql
+-- EOF -------------------------------------------------------------------------
