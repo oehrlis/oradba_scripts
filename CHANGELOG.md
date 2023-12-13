@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.5.0] - 2023-12-13
+
+### Added
+
+- add a generic password verify function [cssec_pwverify.sql](https://github.com/oehrlis/oradba/blob/master/sql/cssec_pwverify.sql) The password strength and complexity can be configured by the internal variables at create time
+- Script [sssec_pwverify_test.sql](https://github.com/oehrlis/oradba/blob/master/sql/sssec_pwverify_test.sql) to verify the custom password verify function. List of passwords to be tested have to added to the script / varchar2 array
+
 ## [1.4.0] - 2023-12-11
 
 ### Added
