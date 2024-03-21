@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add script [sdenc_dbf_off_enc.sql](https://github.com/oehrlis/oradba/blob/master/sql/sdenc_dbf_off_enc.sql) to generate chunks of *alter database* commands for offline encrypt datafiles
 - Add script [sdenc_dbf_off_dec.sql](https://github.com/oehrlis/oradba/blob/master/sql/sdenc_dbf_off_dec.sql) to generate chunks of *alter database* commands for offline decrypt datafiles
 
+### Fixed
+
+- uncomment *oradba_loc_all_act_named_usr* in *iaua_pol.sql*.
+- 
 ## [1.5.1] - 2023-12-13
 
 ### Added

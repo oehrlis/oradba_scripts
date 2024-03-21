@@ -36,7 +36,7 @@ AUDIT POLICY oradba_loc_all_act_proxy_usr;
 AUDIT POLICY oradba_loc_all_act_direct_acc;
 -- AUDIT POLICY oradba_loc_all_act_direct_acc_stm;
 -- AUDIT POLICY oradba_loc_all_act_named_usr;
-AUDIT POLICY oradba_loc_all_act_named_usr BY soe;
+-- AUDIT POLICY oradba_loc_all_act_named_usr BY soe;
 AUDIT POLICY oradba_loc_all_dp_events;
 AUDIT POLICY oradba_loc_dir_acc;
 AUDIT POLICY oradba_loc_acc_mgmt;
