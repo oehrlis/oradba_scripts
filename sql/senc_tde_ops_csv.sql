@@ -41,7 +41,7 @@ SELECT
     lpad(CASE
         WHEN sofar/elapsed_seconds < POWER(1024, 1) THEN ROUND(sofar/elapsed_seconds, 2) || ' B'
         WHEN sofar/elapsed_seconds < POWER(1024, 2) THEN ROUND(sofar/elapsed_seconds / POWER(1024, 1), 2) || ' KB'
-        WHEN sofar/elapsed_seconds < POWER(1024, 3) THEN ROUND(sofsofar/elapsed_secondsar / POWER(1024, 2), 2) || ' MB'
+        WHEN sofar/elapsed_seconds < POWER(1024, 3) THEN ROUND(sofar/elapsed_seconds / POWER(1024, 2), 2) || ' MB'
         WHEN sofar/elapsed_seconds < POWER(1024, 4) THEN ROUND(sofar/elapsed_seconds / POWER(1024, 3), 2) || ' GB'
         ELSE ROUND(sofar/elapsed_seconds / POWER(1024, 4), 2) || ' TB'
     END,12,' ')  AS throughput_formatted,
