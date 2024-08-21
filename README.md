@@ -21,6 +21,7 @@ Azure DevOps pipeline.
 - [images](./images/README.md) Images and logo files.
 - [ldif](./ldif/README.md) *LDIF* files and templates to configure the *Oracle Context*.
 - [log](./log/README.md) logfiles created by the script framework if not stored in *LOG_BASE*
+- [sql](./sql/README.md) SQL files provided by OraDBA for miscellaneous DBA and security use cases.
 - [CHANGELOG.md](./CHANGELOG.md) Change log for the *Markdown Doc Template*.
 - [LICENSE](./LICENSE) License documentation.
 
