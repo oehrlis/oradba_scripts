@@ -245,7 +245,7 @@ function log_message() {
 
     # Assign the color code based on the level
     case "${level^^}" in
-        INFO)       color=${ORADBA_INFO :-'\033[0;30m'} ;;      # Black for info messages
+        INFO)       color=${ORADBA_INFO:-'\033[0;30m'} ;;      # Black for info messages
         WARN)       color=${ORADBA_WARN:-'\033[0;33m'} ;;      # Yellow for warning messages
         ERROR)      color=${ORADBA_ERROR:-'\033[0;31m'} ;;     # Red for error messages
         SUCCESS)    color=${ORADBA_SUCCESS:-'\033[0;32m'} ;;   # Green for info messages
