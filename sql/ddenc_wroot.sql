@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---  OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+--  OraDBA - Oracle Database Infrastructure and Security, 5630 Muri, Switzerland
 --------------------------------------------------------------------------------
 --  Name......: ddenc_wroot.sql
 --  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch

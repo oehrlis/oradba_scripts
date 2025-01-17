@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------------
 --     $Id: lgs.sql 21 2009-09-16 09:11:28Z soe $
 --------------------------------------------------------------------------------
---  OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+--  OraDBA - Oracle Database Infrastructure and Security, 5630 Muri, Switzerland
 --------------------------------------------------------------------------------
 --  Name......: lgs.sql
 --  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch

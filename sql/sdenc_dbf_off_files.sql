@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---  OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+--  OraDBA - Oracle Database Infrastructure and Security, 5630 Muri, Switzerland
 --------------------------------------------------------------------------------
 --  Name......: sdenc_dbf_off_files.sql
 --  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch

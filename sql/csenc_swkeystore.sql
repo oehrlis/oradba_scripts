@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---  OraDBA - Oracle Database Infrastructur and Security, 5630 Muri, Switzerland
+--  OraDBA - Oracle Database Infrastructure and Security, 5630 Muri, Switzerland
 --------------------------------------------------------------------------------
 --  Name......: csenc_swkeystore.sql
 --  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
