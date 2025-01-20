@@ -133,12 +133,14 @@ SELECT tablespace_name, encrypted FROM dba_tablespaces WHERE encrypted ='YES';
 
 PROMPT == Details about encrypted tablespaces ==================================
 SELECT
-    ts#,
-    encryptionalg,
-    encryptedts,
-    blocks_encrypted,
-    blocks_decrypted, con_id
-FROM v$encrypted_tablespaces;
+    t.ts#,t.name, 
+    et.encryptionalg,
+    et.encryptedts,
+    et.blocks_encrypted,
+    et.blocks_decrypted,
+    et.con_id
+FROM v$tablespace t, v$encrypted_tablespaces et
+WHERE t.ts# = et.ts#;
 
 -- list information about TDE column
 PROMPT == Details about encrypted table columns ================================
