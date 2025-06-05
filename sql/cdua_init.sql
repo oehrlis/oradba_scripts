@@ -1,9 +1,8 @@
 --------------------------------------------------------------------------------
---  Trivadis - Part of Accenture, Platform Factory - Data Platforms
---  Saegereistrasse 29, 8152 Glattbrugg, Switzerland
+--  OraDBA - Oracle Database Infrastructure and Security, 5630 Muri, Switzerland
 --------------------------------------------------------------------------------
 --  Name......: cdua_init.sql
---  Author....: Stefan Oehrli (oes) stefan.oehrli@accenture.com
+--  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 --  Editor....: Stefan Oehrli
 --  Date......: 2023.26.29
 --  Usage.....: cdua_init.sql <TABLESPACE NAME> <DATAFILE SIZE> <AUDIT RETENTION>
@@ -35,9 +34,9 @@ SET VERIFY OFF
 COLUMN 1 NEW_VALUE 1 NOPRINT
 COLUMN 2 NEW_VALUE 2 NOPRINT
 COLUMN 3 NEW_VALUE 3 NOPRINT
-SELECT '' "1" FROM dual WHERE ROWNUM = 0;
-SELECT '' "2" FROM dual WHERE ROWNUM = 0;
-SELECT '' "3" FROM dual WHERE ROWNUM = 0;
+SELECT '' "1" FROM dual WHERE ROWNUM = 0; 
+SELECT '' "2" FROM dual WHERE ROWNUM = 0; 
+SELECT '' "3" FROM dual WHERE ROWNUM = 0; 
 DEFINE tablespace_name    = &1 &_tablespace_name
 DEFINE tablespace_size    = &2 &_tablespace_size
 DEFINE audit_retention    = &3 &_audit_retention
@@ -48,12 +47,21 @@ SPOOL cdua_init.log
 -- Anonymous PL/SQL Block to configure audit environment
 SET SERVEROUTPUT ON
 SET LINESIZE 160 PAGESIZE 200
+
 DECLARE
-  v_version           number;
-  v_datafile_path     varchar2(513);
-  v_db_unique_name    varchar2(30);
-  v_audit_tablespace  varchar2(30) := '&tablespace_name';
-  v_audit_data_file   varchar2(513);
+
+  -- Types
+  SUBTYPE text_type IS VARCHAR2(512 CHAR); -- NOSONAR G-2120 keep function independent
+
+  -- Local variables
+  l_version           PLS_INTEGER;
+  l_datafile_path     v$data_file.name%TYPE;
+  l_db_unique_name    v$database.db_unique_name%TYPE;
+  l_audit_tablespace  v$tablespace.name%TYPE := '&tablespace_name';
+  l_audit_data_file   v$data_file.name%TYPE;
+  l_file_dest         v$parameter.value%TYPE;
+  l_sql               text_type;              -- sql used in EXECUTE IMMEDIATE
+
   e_tablespace_exists EXCEPTION;
   e_job_exists        EXCEPTION;
   e_audit_job_exists  EXCEPTION;
@@ -62,83 +70,112 @@ DECLARE
   PRAGMA EXCEPTION_INIT(e_audit_job_exists, -46254);
 
 BEGIN
-  DBMS_OUTPUT.put_line('Setup and initialize audit configuration');
-  SELECT file_name INTO v_datafile_path FROM dba_data_files WHERE file_name like '%system%' AND rownum <2;
-  SELECT db_unique_name INTO v_db_unique_name FROM v$database;
-  SELECT regexp_substr(version,'^\d+') INTO v_version FROM v$instance;
 
--- Create Tablespace but rise an exeption if it allready exists
-  DBMS_OUTPUT.put('- Create '||v_audit_tablespace||' Tablespace... ');
+  sys.dbms_output.put_line('Setup and initialize audit configuration');
+  -- Get required DB info
+  <<get_data_dict_infos>>
   BEGIN
-    IF v_datafile_path LIKE '+%' THEN
-      SELECT regexp_substr(file_name,'[^/]*') INTO v_datafile_path FROM dba_data_files WHERE file_name like '%system%' AND rownum <2;
-      EXECUTE IMMEDIATE 'CREATE TABLESPACE '||v_audit_tablespace||' DATAFILE '''||v_datafile_path||''' SIZE &tablespace_size AUTOEXTEND ON NEXT 10240K MAXSIZE UNLIMITED';
-    ELSE
-      SELECT regexp_substr(file_name,'^/.*/') INTO v_datafile_path FROM dba_data_files WHERE file_name like '%system%' AND rownum <2;
-      -- Datafile String for Audit Tablespace
-      v_audit_data_file := v_datafile_path||lower(v_audit_tablespace)||'01'||v_db_unique_name||'.dbf'; 
-      EXECUTE IMMEDIATE 'CREATE TABLESPACE '||v_audit_tablespace||' DATAFILE '''||v_audit_data_file||''' SIZE &tablespace_size AUTOEXTEND ON NEXT 10240K MAXSIZE UNLIMITED';
-    END IF;
-    DBMS_OUTPUT.put_line('created');
+    SELECT 
+      (SELECT value FROM v$parameter WHERE name = 'db_create_file_dest'),
+      (SELECT db_unique_name FROM v$database),
+      (SELECT regexp_substr(version, '^\d+') FROM v$instance),
+      (SELECT file_name FROM dba_data_files WHERE file_name LIKE '%system%' AND ROWNUM = 1)
+    INTO
+      l_file_dest, l_db_unique_name, l_version, l_datafile_path;
   EXCEPTION
-     WHEN e_tablespace_exists THEN
-          DBMS_OUTPUT.PUT_LINE('already exists');
-  END;
+    WHEN NO_DATA_FOUND OR TOO_MANY_ROWS THEN
+      sys.dbms_output.put_line('Error: Unable to retrieve data dictionary information.');
+  END get_data_dict_infos;
+  
+-- Create Tablespace but rise an exception if it already exists
+  sys.dbms_output.put('- Create ' || l_audit_tablespace || ' Tablespace... ');
+  <<create_tablespace>>
+  BEGIN
+    IF l_file_dest IS NOT NULL THEN
+      -- OMF is enabled
+      l_sql := 'CREATE BIGFILE TABLESPACE ' || l_audit_tablespace ||
+               ' DATAFILE SIZE &tablespace_size AUTOEXTEND ON NEXT 10240K MAXSIZE UNLIMITED';
+      sys.dbms_output.put_line('created (OMF)');
+    ELSE
+      -- Derive path or diskgroup from SYSTEM datafile
+      IF l_datafile_path LIKE '+%' THEN
+        -- ASM path
+        l_datafile_path := regexp_substr(l_datafile_path, '[^/]*');
+        l_sql := 'CREATE BIGFILE TABLESPACE ' || l_audit_tablespace ||
+                 ' DATAFILE ''' || l_datafile_path || ''' SIZE &tablespace_size AUTOEXTEND ON NEXT 10240K MAXSIZE UNLIMITED';
+        sys.dbms_output.put_line('created (ASM)');
+      ELSE
+        -- Filesystem path
+        l_datafile_path := regexp_substr(l_datafile_path, '^/.*/');
+        l_audit_data_file := l_datafile_path || LOWER(l_audit_tablespace) || '01' || l_db_unique_name || '.dbf';
+        l_sql := 'CREATE BIGFILE TABLESPACE ' || l_audit_tablespace ||
+                 ' DATAFILE ''' || l_audit_data_file || ''' SIZE &tablespace_size AUTOEXTEND ON NEXT 10240K MAXSIZE UNLIMITED';
+        sys.dbms_output.put_line('created (regular)');
+      END IF;
+    END IF;
+    EXECUTE IMMEDIATE l_sql;
+
+  EXCEPTION
+    WHEN e_tablespace_exists THEN
+      sys.dbms_output.put_line('already exists');
+  END create_tablespace;
 
   -- set location for Unified Audit Trail
-  DBMS_OUTPUT.put_line('Set location to '||v_audit_tablespace||' for Unified Audit');
-  DBMS_AUDIT_MGMT.SET_AUDIT_TRAIL_LOCATION(
-    audit_trail_type           => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,
-    audit_trail_location_value => v_audit_tablespace
+  sys.dbms_output.put_line('Set location to '||l_audit_tablespace||' for Unified Audit');
+  sys.dbms_audit_mgmt.set_audit_trail_location(
+    audit_trail_type           => sys.dbms_audit_mgmt.audit_trail_unified,
+    audit_trail_location_value => l_audit_tablespace
   );
 
   -- set location for Standard and FGA Audit Trail
-  DBMS_OUTPUT.put_line('Set location to '||v_audit_tablespace||' for Standard and FGA Audit Trail');
-  DBMS_AUDIT_MGMT.SET_AUDIT_TRAIL_LOCATION(
-    audit_trail_type           => DBMS_AUDIT_MGMT.AUDIT_TRAIL_DB_STD,
-    audit_trail_location_value => v_audit_tablespace
+  sys.dbms_output.put_line('Set location to '||l_audit_tablespace||' for Standard and FGA Audit Trail');
+  sys.dbms_audit_mgmt.set_audit_trail_location(
+    audit_trail_type           => sys.dbms_audit_mgmt.audit_trail_db_std,
+    audit_trail_location_value => l_audit_tablespace
   );
 
-  DBMS_OUTPUT.put_line('Set partition interval to 1 day');
-  DBMS_AUDIT_MGMT.ALTER_PARTITION_INTERVAL(
+  sys.dbms_output.put_line('Set partition interval to 1 day');
+  sys.dbms_audit_mgmt.alter_partition_interval(
     interval_number       => 1,
     interval_frequency    => 'DAY');
 
-  DBMS_OUTPUT.put_line('Create archive timestamp jobs');
-  DBMS_OUTPUT.put('- Unified Audit Trail........... ');
+  sys.dbms_output.put_line('Create archive timestamp jobs');
+  sys.dbms_output.put('- Unified Audit Trail........... ');
+  <<create_ts_job>>
   BEGIN
-    DBMS_SCHEDULER.CREATE_JOB (
+    sys.dbms_scheduler.create_job (
       job_name   => 'DAILY_UNIFIED_AUDIT_TIMESTAMP',
       job_type   => 'PLSQL_BLOCK',
-      job_action => 'BEGIN DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(AUDIT_TRAIL_TYPE => 
-                      DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,LAST_ARCHIVE_TIME => sysdate-&audit_retention); END;',
+      job_action => 'BEGIN sys.dbms_audit_mgmt.set_last_archive_timestamp(audit_trail_type => 
+                      sys.dbms_audit_mgmt.audit_trail_unified,last_archive_time => sysdate-&audit_retention); END;',
       start_date => sysdate,
       repeat_interval => 'FREQ=HOURLY;INTERVAL=24',
       enabled    =>  TRUE,
       comments   => 'Archive timestamp for unified audit to sysdate-&audit_retention'
     );
-    DBMS_OUTPUT.put_line('created');
+    sys.dbms_output.put_line('created');
   EXCEPTION
     WHEN e_job_exists THEN
-      DBMS_OUTPUT.PUT_LINE('already exists');
-  END;
+      sys.dbms_output.PUT_LINE('already exists');
+  END create_ts_job;
 
 -- Create daily purge job
-  DBMS_OUTPUT.put_line('Create archive purge jobs');
+  sys.dbms_output.put_line('Create archive purge jobs');
   -- Purge Job Unified Audit Trail
-  DBMS_OUTPUT.put('- Unified Audit Trail............ ');
+  sys.dbms_output.put('- Unified Audit Trail............ ');
+  <<create_purge_job>>
   BEGIN
-    DBMS_AUDIT_MGMT.CREATE_PURGE_JOB(
-      audit_trail_type           => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,
+    sys.dbms_audit_mgmt.create_purge_job(
+      audit_trail_type           => sys.dbms_audit_mgmt.audit_trail_unified,
       audit_trail_purge_interval => 24 /* hours */,
       audit_trail_purge_name     => 'Daily_Unified_Audit_Purge_Job',
       use_last_arch_timestamp    => TRUE
     );
-    DBMS_OUTPUT.put_line('created');
+    sys.dbms_output.put_line('created');
   EXCEPTION
     WHEN e_audit_job_exists THEN
-      DBMS_OUTPUT.PUT_LINE('already exists');
-  END;
+      sys.dbms_output.PUT_LINE('already exists');
+  END create_purge_job;
 
 END;
 /
@@ -159,7 +196,7 @@ SELECT job_name,repeat_interval,comments FROM dba_scheduler_jobs WHERE job_name 
 
 COL policy_name for a40
 COL entity_name for a30
-SELECT * FROM audit_unified_enabled_policies;
+SELECT policy_name, enabled_option, entity_name, entity_type, success, failure FROM audit_unified_enabled_policies;
 
 SPOOL off
 -- EOF -------------------------------------------------------------------------
