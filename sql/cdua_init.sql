@@ -55,13 +55,13 @@ DECLARE
 
   -- Local variables
   l_version           PLS_INTEGER;
-  l_datafile_path     v$data_file.name%TYPE;
+  l_datafile_path     dba_data_files.file_name%TYPE;
   l_db_unique_name    v$database.db_unique_name%TYPE;
   l_audit_tablespace  v$tablespace.name%TYPE := '&tablespace_name';
-  l_audit_data_file   v$data_file.name%TYPE;
+  l_audit_data_file   dba_data_files.file_name%TYPE;
   l_file_dest         v$parameter.value%TYPE;
   l_sql               text_type;              -- sql used in EXECUTE IMMEDIATE
-
+  l_status            text_type;              -- sql used in EXECUTE IMMEDIATE
   e_tablespace_exists EXCEPTION;
   e_job_exists        EXCEPTION;
   e_audit_job_exists  EXCEPTION;
@@ -81,7 +81,8 @@ BEGIN
       (SELECT regexp_substr(version, '^\d+') FROM v$instance),
       (SELECT file_name FROM dba_data_files WHERE file_name LIKE '%system%' AND ROWNUM = 1)
     INTO
-      l_file_dest, l_db_unique_name, l_version, l_datafile_path;
+      l_file_dest, l_db_unique_name, l_version, l_datafile_path
+    FROM dual;
   EXCEPTION
     WHEN NO_DATA_FOUND OR TOO_MANY_ROWS THEN
       sys.dbms_output.put_line('Error: Unable to retrieve data dictionary information.');
@@ -95,7 +96,7 @@ BEGIN
       -- OMF is enabled
       l_sql := 'CREATE BIGFILE TABLESPACE ' || l_audit_tablespace ||
                ' DATAFILE SIZE &tablespace_size AUTOEXTEND ON NEXT 10240K MAXSIZE UNLIMITED';
-      sys.dbms_output.put_line('created (OMF)');
+      l_status:='created (OMF)';
     ELSE
       -- Derive path or diskgroup from SYSTEM datafile
       IF l_datafile_path LIKE '+%' THEN
@@ -103,18 +104,18 @@ BEGIN
         l_datafile_path := regexp_substr(l_datafile_path, '[^/]*');
         l_sql := 'CREATE BIGFILE TABLESPACE ' || l_audit_tablespace ||
                  ' DATAFILE ''' || l_datafile_path || ''' SIZE &tablespace_size AUTOEXTEND ON NEXT 10240K MAXSIZE UNLIMITED';
-        sys.dbms_output.put_line('created (ASM)');
+        l_status:='created (ASM)';
       ELSE
         -- Filesystem path
         l_datafile_path := regexp_substr(l_datafile_path, '^/.*/');
         l_audit_data_file := l_datafile_path || LOWER(l_audit_tablespace) || '01' || l_db_unique_name || '.dbf';
         l_sql := 'CREATE BIGFILE TABLESPACE ' || l_audit_tablespace ||
                  ' DATAFILE ''' || l_audit_data_file || ''' SIZE &tablespace_size AUTOEXTEND ON NEXT 10240K MAXSIZE UNLIMITED';
-        sys.dbms_output.put_line('created (regular)');
+        l_status:='created (regular)';
       END IF;
     END IF;
     EXECUTE IMMEDIATE l_sql;
-
+    sys.dbms_output.put_line(l_status);
   EXCEPTION
     WHEN e_tablespace_exists THEN
       sys.dbms_output.put_line('already exists');
