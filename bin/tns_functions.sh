@@ -214,7 +214,7 @@ function ldapsearch_options () {
     if [ "${TVDLDAP_LDAPTOOLS^^}" == "OPENLDAP" ]; then
         echo "-x -o ldif-wrap=no -LLL"
     elif [ "${TVDLDAP_LDAPTOOLS^^}" == "OUD" ]; then
-        echo "-o 'ldif-wrap=no'"
+        echo "-T -o 'ldif-wrap=no'"
     elif [ "${TVDLDAP_LDAPTOOLS^^}" == "DB" ]; then
         echo "-L"
     else
