@@ -123,7 +123,7 @@ fi
 # Search for matching connect string
 for i in $(seq 1 $COUNT); do
     ALIAS=$(get_entry oracle.security.client.connect_string$i)
-    if [[ "$ALIAS" == "$CONNECT_STRING" ]]; then
+    if [[ "${ALIAS,,}" == "${CONNECT_STRING,,}" ]]; then
         # If a match is found, retrieve the password
         log_message INFO "Found connect string '$CONNECT_STRING' in wallet."
         PASSWORD=$(get_entry oracle.security.client.password$i)
