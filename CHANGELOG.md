@@ -17,6 +17,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.8.0] - 2025-06-05
+
+### Added
+
+- add script *get_seps_pwd.sh* to extract password from oracle wallet
+  
+### Changed
+
+- Update file header for SQL files
+- rework *cdua_init.sql* to handle OMF files
+
+### Fixed
+
+- Fix issue with line wrap in ldapsearch of *tns_function.sh*
+
 ## [1.7.0] - 2024-08-21
 
 ### Added
