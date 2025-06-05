@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.8.1] - 2025-06-05
+
+### Fixed
+
+- execute permission for *get_seps_pwd.sh*
+
 ## [1.8.0] - 2025-06-05
 
 ### Added
