@@ -2,7 +2,7 @@
 --  OraDBA - Oracle Database Infrastructure and Security, 5630 Muri, Switzerland
 --------------------------------------------------------------------------------
 --  Name......: ddenc_tde_user.sql
---  Author....: Stefan Oehrli (oes) stefan.oehrli@accenture.com
+--  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 --  Editor....: Stefan Oehrli
 --  Date......: 2023.12.19
 --  Usage.....: SQL*Plus script to delete Transparent Data Encryption (TDE) settings 

@@ -3,7 +3,7 @@
 -- Saegereistrasse 29, 8152 Glattbrugg, Switzerland
 --------------------------------------------------------------------------------
 -- Name......: sssec_pwverify_test.sql
--- Author....: Stefan Oehrli (oes) stefan.oehrli@accenture.com
+-- Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 -- Editor....: Stefan Oehrli
 -- Date......: 2023.12.12
 -- Usage.....: 

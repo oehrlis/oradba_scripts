@@ -3,7 +3,7 @@
 --  Saegereistrasse 29, 8152 Glattbrugg, Switzerland
 --------------------------------------------------------------------------------
 --  Name......: cdsec_credbarestrole.sql
---  Author....: Stefan Oehrli (oes) stefan.oehrli@accenture.com
+--  Author....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 --  Editor....: Stefan Oehrli
 --  Date......: 2023.03.17
 --  Usage.....: cdsec_credbarestrole.sql <ROLE NAME>
