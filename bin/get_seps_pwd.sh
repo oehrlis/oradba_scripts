@@ -24,7 +24,6 @@ SCRIPT_ETC_DIR="${SCRIPT_BASE}/etc"
 SCRIPT_LOG_DIR="${SCRIPT_BASE}/log"
 SCRIPT_LOG="${SCRIPT_LOG_DIR}/${SCRIPT_NAME%.sh}_$(date +%Y%m%d_%H%M%S).log"
 DEBUG=false
-
 WALLET_DIR="${cdn:-${ORACLE_BASE}/network}/wallet"
 WALLET_PASSWORD="${WALLET_PASSWORD:-}"
 CONNECT_STRING=""
@@ -32,6 +31,13 @@ QUIET=false
 # - EOF Default Values ---------------------------------------------------------
 
 # - Functions ------------------------------------------------------------------
+
+# Function...: Usage
+# Purpose....: Display usage information and exit
+# Usage......: Usage
+# Parameters.: None
+# Globals....: SCRIPT_NAME
+# ------------------------------------------------------------------------------
 function Usage {
     cat <<EOF
 
