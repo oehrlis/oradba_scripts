@@ -17,6 +17,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.9.0] - 2025-06-010
+
+### Added
+
+- add parameter -v for verbose mode in *get_seps_pwd.sh*
+- add parameter -d for debug mode in *get_seps_pwd.sh*
+- add parameter -w to specify alternative wallet location in *get_seps_pwd.sh*
+
+### Fixed
+
+- fix quiet mode in *get_seps_pwd.sh*
+
 ## [1.8.2] - 2025-06-05
 
 ### Fixed
