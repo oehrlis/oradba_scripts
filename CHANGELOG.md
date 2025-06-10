@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.10.0] - 2025-06-010
+
+### Added
+
+- add parameter -c in *get_seps_pwd.sh* to check if a password exists but do not display it.
+  
 ## [1.9.0] - 2025-06-010
 
 ### Added
