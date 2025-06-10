@@ -6,7 +6,7 @@
 # Author.....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 # Editor.....: Stefan Oehrli
 # Date.......: 2025.06.05
-# Version....: v0.2.0
+# Version....: v0.3.0
 # Purpose....: Extract password for a given connect string from Oracle Wallet
 # Notes......: Uses mkstore. Password must be entered only once.
 # Reference..: https://github.com/oehrlis
@@ -23,11 +23,12 @@ SCRIPT_BASE=$(dirname ${SCRIPT_BIN_DIR})
 SCRIPT_ETC_DIR="${SCRIPT_BASE}/etc"
 SCRIPT_LOG_DIR="${SCRIPT_BASE}/log"
 SCRIPT_LOG="${SCRIPT_LOG_DIR}/${SCRIPT_NAME%.sh}_$(date +%Y%m%d_%H%M%S).log"
-DEBUG=false
 WALLET_DIR="${cdn:-${ORACLE_BASE}/network}/wallet"
 WALLET_PASSWORD="${WALLET_PASSWORD:-}"
 CONNECT_STRING=""
 QUIET=false
+DEBUG=false
+VERBOSE=false
 # - EOF Default Values ---------------------------------------------------------
 
 # - Functions ------------------------------------------------------------------
@@ -46,6 +47,9 @@ Usage: ${SCRIPT_NAME} -s <connect_string> [-q]
 Options:
   -s <connect_string>   Required. The DB alias (TNS name) to match.
   -q                    Quiet mode. Output only the password.
+  -v                    Enable verbose output (debug mode).
+  -d                    Enable debug mode (prints debug messages).
+  -w <wallet_dir>       Specify the Oracle Wallet directory (default: ${WALLET_DIR}).
   -h                    Show this help message.
 EOF
     exit 1
@@ -55,12 +59,13 @@ EOF
 # Purpose....: Print and log a message with optional color and support for multiline strings
 # Parameters.: $1 - Log level (INFO, DEBUG, ERROR)
 #              $2 - Message text (can include newlines)
-# Globals....: SCRIPT_LOG, DEBUG
+# Globals....: SCRIPT_LOG, DEBUG, QUIET
 # ------------------------------------------------------------------------------ 
 function log_message {
     local level="$1"
     local message="$2"
     [[ "$level" == "DEBUG" && "$DEBUG" != true ]] && return
+    [[ "$QUIET" == true ]] && return
 
     local plain_message="[$level] $message"
 
@@ -93,16 +98,41 @@ function get_entry {
 # - EOF Functions --------------------------------------------------------------
 
 # - Parse Parameters -----------------------------------------------------------
-while getopts "s:qh" opt; do
+while getopts "s:qhvdw:" opt; do
     case "$opt" in
         s) CONNECT_STRING="$OPTARG" ;;
         q) QUIET=true ;;
+        v) VERBOSE=true ;;
+        d) DEBUG=true ;;
+        w) WALLET_DIR="$OPTARG" ;;
         h|*) Usage ;;
     esac
 done
 
 # check if required parameters are set
 [[ -z "$CONNECT_STRING" ]] && Usage
+
+# check if wallet directory exists
+if [[ ! -d "$WALLET_DIR" ]]; then
+    log_message ERROR "Wallet directory '$WALLET_DIR' does not exist."
+    exit 1
+fi
+# check if wallet directory is readable
+if [[ ! -r "$WALLET_DIR" ]]; then
+    log_message ERROR "Wallet directory '$WALLET_DIR' is not readable."
+    exit 1
+fi
+
+# check if mkstore is available
+if ! command -v mkstore &> /dev/null; then
+    log_message ERROR "mkstore command not found. Please ensure Oracle Client is installed and configured."
+    exit 1
+fi
+# check if mkstore is executable
+if [[ ! -x "$(command -v mkstore)" ]]; then
+    log_message ERROR "mkstore is not executable. Please check your Oracle Client installation."
+    exit 1
+fi
 
 # Load password from encoded file if available
 if [[ -f "$WALLET_DIR/.wallet_pwd" ]]; then
