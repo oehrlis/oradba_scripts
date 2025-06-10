@@ -6,7 +6,7 @@
 # Author.....: Stefan Oehrli (oes) stefan.oehrli@oradba.ch
 # Editor.....: Stefan Oehrli
 # Date.......: 2025.06.05
-# Version....: v0.3.0
+# Version....: v0.4.0
 # Purpose....: Extract password for a given connect string from Oracle Wallet
 # Notes......: Uses mkstore. Password must be entered only once.
 # Reference..: https://github.com/oehrlis
@@ -29,6 +29,7 @@ CONNECT_STRING=""
 QUIET=false
 DEBUG=false
 VERBOSE=false
+CHECK=false
 # - EOF Default Values ---------------------------------------------------------
 
 # - Functions ------------------------------------------------------------------
@@ -46,6 +47,7 @@ Usage: ${SCRIPT_NAME} -s <connect_string> [-q]
 
 Options:
   -s <connect_string>   Required. The DB alias (TNS name) to match.
+  -c                    Check if a password exists for the given connect string, but do not output it.
   -q                    Quiet mode. Output only the password.
   -v                    Enable verbose output (debug mode).
   -d                    Enable debug mode (prints debug messages).
@@ -101,6 +103,7 @@ function get_entry {
 while getopts "s:qhvdw:" opt; do
     case "$opt" in
         s) CONNECT_STRING="$OPTARG" ;;
+        c) CHECK=true ;;
         q) QUIET=true ;;
         v) VERBOSE=true ;;
         d) DEBUG=true ;;
@@ -163,6 +166,11 @@ for i in $(seq 1 $COUNT); do
         # If a match is found, retrieve the password
         log_message INFO "Found connect string '$CONNECT_STRING' in wallet."
         PASSWORD=$(get_entry oracle.security.client.password$i)
+        if $CHECK; then
+            # If in check mode, just output a success message
+            log_message INFO "Password exists for connect string '$CONNECT_STRING'."
+            exit 0
+        fi
         if $QUIET; then
             # If in quiet mode, just output the password
             echo "$PASSWORD"
