@@ -100,7 +100,7 @@ function get_entry {
 # - EOF Functions --------------------------------------------------------------
 
 # - Parse Parameters -----------------------------------------------------------
-while getopts "s:qhvdw:" opt; do
+while getopts "s:qhvcdw:" opt; do
     case "$opt" in
         s) CONNECT_STRING="$OPTARG" ;;
         c) CHECK=true ;;

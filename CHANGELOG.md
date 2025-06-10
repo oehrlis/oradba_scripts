@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.10.1] - 2025-06-010
+
+### Fixed
+
+- add missing c option in getopts in script *get_seps_pwd.sh*.
+
 ## [1.10.0] - 2025-06-010
 
 ### Added
