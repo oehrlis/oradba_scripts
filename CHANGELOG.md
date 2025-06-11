@@ -17,19 +17,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-## [1.10.1] - 2025-06-010
+## [1.11.0] - 2025-06-11
+
+### Added
+
+- add new script *sync_to_peers.sh* to synchronise files between peer hosts. Sync a file or folder from current host to all peer hosts
+- add new script *sync_from_peers.sh* to synchronise files between peer hosts. Sync a file or folder from a remote peer to local, then to other peers
+- add config file *sync_to_peers.conf* for *sync_to_peers.sh*
+- add config file *sync_from_peers.conf* for *sync_from_peers.sh*
+
+## [1.10.1] - 2025-06-10
 
 ### Fixed
 
 - add missing c option in getopts in script *get_seps_pwd.sh*.
 
-## [1.10.0] - 2025-06-010
+## [1.10.0] - 2025-06-10
 
 ### Added
 
 - add parameter -c in *get_seps_pwd.sh* to check if a password exists but do not display it.
   
-## [1.9.0] - 2025-06-010
+## [1.9.0] - 2025-06-10
 
 ### Added
 
