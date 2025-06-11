@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.11.1] - 2025-06-11
+
+### Fixed
+
+- execute permission for *sync_to_peers.sh*
+- execute permission for *sync_from_peers.sh*
+
 ## [1.11.0] - 2025-06-11
 
 ### Added
