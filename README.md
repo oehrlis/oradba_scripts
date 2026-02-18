@@ -64,13 +64,12 @@ If you do not want to install the full environment, you can download the release
 The release contains:
 
 * `oradba-<version>.tar.gz` – full source payload
-* (If provided) `oradba-sql-<version>.tar.gz` – SQL scripts only
 
 You can extract the tarball and use the SQL scripts directly:
 
 ```bash
-tar -xzf oradba-sql-<version>.tar.gz
-cd oradba-sql-<version>/sql
+tar -xzf oradba-<version>.tar.gz
+cd oradba-<version>/sql
 sqlplus / as sysdba @script.sql
 ```
 
