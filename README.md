@@ -1,54 +1,128 @@
-# OraDBA
+# OraDBA (Legacy Repository – Archived)
 
 <!-- markdownlint-disable MD013 -->
 
-Welcome to the *OraDBA* a collection of scripts from [www.oradba.ch](https://www.oradba.ch/). This repository contains a couple of database administration scripts in *SQL* and *bash*. Among others it also includes a set of tools to maintain *Oracle Net Service* names resolution in *OpenLDAP*, *389DS* and *Oracle Unified Directory*. The project includes the documentation as well the corresponding script framework to setup and administer *Oracle Net Service* name in a *389 Directory Server* in particular.
+> **⚠️ This repository is deprecated and archived.**
+>
+> Active development has moved to the main
+> 👉 **[https://github.com/oehrlis/oradba](https://github.com/oehrlis/oradba)**
+>
+> All maintained scripts (including the SQL scripts from this repository) are now part of the main *oradba* project.
 
-## Downloads and Latest Builds
+---
 
-The official release documents are always attached to the pipelines as artifact.
-See also the [release](https://github.com/oehrlis/oradba/releases)
-page of this repository.
+## About This Repository
 
-Nightly Builds respectively builds on commit are attached as artifact to the
-Azure DevOps pipeline.
+This repository originally contained a collection of database administration scripts in *SQL* and *bash* from [www.oradba.ch](https://www.oradba.ch/).
+It also included tools to maintain *Oracle Net Service* name resolution in *OpenLDAP*, *389DS* and *Oracle Unified Directory*, as well as documentation and framework components.
 
-## Files and Folders
+Most of this functionality has been consolidated and is now maintained in:
 
-- [bin](./bin/README.md) Scripts to administer and configure *Oracle Net Service* directory objects as well other *Database Administration* tasks.
-- [doc](./doc/README.md) Markdown documentation files.
-- [etc](./etc/README.md) Configuration files and templates for the *389 Directory Server* and the script framework.
-- [images](./images/README.md) Images and logo files.
-- [ldif](./ldif/README.md) *LDIF* files and templates to configure the *Oracle Context*.
-- [log](./log/README.md) logfiles created by the script framework if not stored in *LOG_BASE*
-- [sql](./sql/README.md) SQL files provided by OraDBA for miscellaneous DBA and security use cases.
-- [CHANGELOG.md](./CHANGELOG.md) Change log for the *Markdown Doc Template*.
-- [LICENSE](./LICENSE) License documentation.
+👉 **[https://github.com/oehrlis/oradba](https://github.com/oehrlis/oradba)**
 
-## Releases and Versions
+This repository remains available for historical reference only and is no longer maintained.
 
-You find all official releases and release information on the Azure DevOps
-project release page. As well documented in the [CHANGELOG.md](./CHANGELOG.md).
+---
 
-The versioning and release tags follow the [semantic versioning](https://semver.org/).
-A version number is specified by MAJOR.MINOR.PATCH, increase the:
+# Where to Get the Current Version
 
-- *MAJOR* version when you make incompatible API changes,
-- *MINOR* version when you add functionality in a backwards compatible manner, and
-- *PATCH* version when you make backwards compatible bug fixes.
+All new development and maintained content is part of:
 
-Additional labels for pre-release and build metadata are available as extensions
-to the MAJOR.MINOR.PATCH format.
+## 👉 [https://github.com/oehrlis/oradba](https://github.com/oehrlis/oradba)
 
-## How to Contribute
+There are two recommended ways to use *oradba* today:
 
-It is highly recommended to take into account [AUTHOR_GUIDE.md](./AUTHOR_GUIDE.md) when contributing to this *Markdown Documentation*. However contributing covers the following steps.
+---
 
-1. [Fork this respository](https://github.com/oehrlis/oradba/fork)
-2. [Create a branch](https://help.github.com/articles/creating-and-deleting-branches-within-your-repository/), commit and publish your changes and enhancements
-3. [Create a pull request](https://help.github.com/articles/creating-a-pull-request/)
+## Option 1 – Install the Full OraDBA Environment (Recommended)
 
-## License
+The main repository provides an installation script:
 
-**OraDBA** is licensed under the Apache License 2.0. You may obtain a
-copy of the License at <http://www.apache.org/licenses/LICENSE-2.0>.
+```bash
+./oradba_install.sh
+```
+
+This installs the complete *OraDBA* environment, including:
+
+* Environment setup
+* Aliases
+* Helper functions
+* Bash tools
+* SQL scripts
+* Templates and configuration files
+
+This is the recommended approach if you want the full DBA working environment.
+
+---
+
+## Option 2 – Use the Tarball (No Installation Required)
+
+If you do not want to install the full environment, you can download the release tarball from:
+
+👉 [https://github.com/oehrlis/oradba/releases](https://github.com/oehrlis/oradba/releases)
+
+The release contains:
+
+* `oradba-<version>.tar.gz` – full source payload
+* (If provided) `oradba-sql-<version>.tar.gz` – SQL scripts only
+
+You can extract the tarball and use the SQL scripts directly:
+
+```bash
+tar -xzf oradba-sql-<version>.tar.gz
+cd oradba-sql-<version>/sql
+sqlplus / as sysdba @script.sql
+```
+
+This is useful if you only need the SQL scripts without the shell environment.
+
+---
+
+# Legacy Content
+
+The original folder structure of this repository included:
+
+* `bin/` – Scripts to administer and configure *Oracle Net Service* directory objects and other DBA tasks
+* `doc/` – Markdown documentation files
+* `etc/` – Configuration files and templates
+* `images/` – Images and logos
+* `ldif/` – *LDIF* files and templates
+* `log/` – Log files created by the script framework
+* `sql/` – SQL files for miscellaneous DBA and security use cases
+* `CHANGELOG.md`
+* `LICENSE`
+
+All maintained and relevant components have been migrated to the main *oradba* repository.
+
+---
+
+# Versioning
+
+The active project (*oradba*) follows [Semantic Versioning](https://semver.org/):
+
+MAJOR.MINOR.PATCH
+
+* **MAJOR** – incompatible changes
+* **MINOR** – backward-compatible enhancements
+* **PATCH** – backward-compatible fixes
+
+Please refer to the `CHANGELOG.md` in the main repository for current release information.
+
+---
+
+# Contributing
+
+This repository is archived and no longer accepts contributions.
+
+If you would like to contribute, please use:
+
+👉 [https://github.com/oehrlis/oradba](https://github.com/oehrlis/oradba)
+
+---
+
+# License
+
+**OraDBA** is licensed under the Apache License 2.0.
+You may obtain a copy of the License at:
+
+[http://www.apache.org/licenses/LICENSE-2.0/](http://www.apache.org/licenses/LICENSE-2.0/)
